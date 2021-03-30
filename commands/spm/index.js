@@ -15,7 +15,7 @@ module.exports = {
 			shell: require("util").promisify(require("child_process").exec),
 			save: (async (item, options) => {
 				const fs = require("fs").promises;
-				const dir = `/code/spm/${options.dir}/${item.Name}`;
+				const dir = `D:/dev/node/not-my-stuff/spm/${options.dir}/${item.Name}`;
 				if (!await this.staticData.helpers.exists(dir)) {
 					await fs.mkdir(dir);
 				}
@@ -58,7 +58,7 @@ module.exports = {
 				return { updated };
 			}),
 			load: (async (item, options) => {
-				const itemFile = `/code/spm/${options.dir}/${item}/index.js`;
+				const itemFile = `${options.dir}/${item}/index.js`;
 				if (!await this.staticData.helpers.exists(itemFile)) {
 					console.warn(`index.js file for ${options.name} ${item} does not exist`);
 					return { updated: false };
@@ -67,7 +67,7 @@ module.exports = {
 				// Fetch the latest commit for a given file
 				const shellResult = await this.staticData.helpers.shell(sb.Utils.tag.trim `
 					git
-					-C /code/spm
+					-C D:/dev/node/not-my-stuff/spm/
 					log -n 1
 					--pretty=format:%H
 					-- ${options.dir}/${item}/index.js
@@ -180,7 +180,7 @@ module.exports = {
 					const added = [];
 					const commandDirs = (args.length > 0)
 						? args.map(i => sb.Command.get(i)?.Name ?? i)
-						: await helpers.fs.readdir("/code/spm/commands");
+						: await helpers.fs.readdir("D:/dev/node/not-my-stuff/spm/commands");
 	
 					const promises = commandDirs.map(async (command) => {
 						const result = await helpers.load(command, {
@@ -275,7 +275,7 @@ module.exports = {
 					const added = [];
 					const moduleDirs = (args.length > 0)
 						? args.map(i => sb.ChatModule.get(i)?.Name ?? i)
-						: await helpers.fs.readdir("/code/spm/chat-modules");
+						: await helpers.fs.readdir("D:/dev/node/not-my-stuff/spm/chat-modules");
 	
 					const promises = moduleDirs.map(async (chatModule) => {
 						const result = await helpers.load(chatModule, {
@@ -354,7 +354,7 @@ module.exports = {
 					const added = [];
 					const cronDirs = (args.length > 0)
 						? args.map(i => sb.Cron.get(i)?.Name ?? i)
-						: await helpers.fs.readdir("/code/spm/crons");
+						: await helpers.fs.readdir("D:/dev/node/not-my-stuff/spm/crons");
 	
 					const promises = cronDirs.map(async (cron) => {
 						const result = await helpers.load(cron, {
@@ -433,7 +433,7 @@ module.exports = {
 					const added = [];
 					const cronDirs = (args.length > 0)
 						? args.map(i => sb.Cron.get(i)?.Name ?? i)
-						: await helpers.fs.readdir("/code/spm/crons");
+						: await helpers.fs.readdir("D:/dev/node/not-my-stuff/spm/crons");
 	
 					const promises = cronDirs.map(async (cron) => {
 						const result = await helpers.load(cron, {
@@ -470,6 +470,16 @@ module.exports = {
 		]
 	})),
 	Code: (async function spm (context, ...args) {
+		// I cant get filters to work right now
+		if(context.user.ID !== 1) {
+			console.warn("Temp whitelist still active in spm.")
+			return {
+				success: false,
+				reply: 'You cant use this command!',
+				reason: 'temp-whitelist'
+			};
+		}
+	
 		const { commands, helpers, operations } = this.staticData;
 		const operation = args.shift()?.toLowerCase();
 		if (!operation) {
