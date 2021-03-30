@@ -6,7 +6,7 @@ module.exports = {
 	Description: "Various utility subcommands related to supibot-package-manager.",
 	Flags: ["developer","mention","whitelist"],
 	Params: null,
-	Whitelist_Response: "Only Supi can use this command, but you can check the repository here: https://github.com/supinic/supibot-package-manager peepoHackies",
+	Whitelist_Response: "Only Quinn can use this command, but you can check the repository here: https://github.com/notnotquinn/supibot-package-manager peepoHackies",
 	Static_Data: (() => ({
 		operations: ["dump", "load"],
 		helpers: {
