@@ -1,10 +1,10 @@
 module.exports = {
-	Name: "ping-supi",
+	Name: "ping-quinn",
 	Events: ["message"],
-	Description: "This module notifies Supinic whenever he is mentioned (in any channel, across platforms) via Twitch whispers.",
-	Code: (async function pingSupi (context) {
+	Description: "This module notifies QuinnDT whenever he is mentioned (in any channel, across platforms) via Twitch whispers.",
+	Code: (async function pingQuinn (context) {
 		const { message, channel, user } = context;
-		const regex = /supi\b|supinic|bupi/i;
+		const regex = /q+u+[i1l\|]+nn+/i;
 	
 		if (typeof this.data.timeout === "undefined") {
 			this.data.timeout = 0;
@@ -17,7 +17,7 @@ module.exports = {
 			this.data.timeout = now + 1000;
 	
 			const pingMessage = `[#${channel.Description ?? channel.Name}] ${userName}: ${message}`;
-			await sb.Platform.get("twitch").pm(pingMessage, await sb.User.get("supinic"));
+			await sb.Platform.get("twitch").pm(pingMessage, await sb.User.get("quinndt"));
 		}
 	}),
 	Author: "supinic"
