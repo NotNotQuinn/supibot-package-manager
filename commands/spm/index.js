@@ -517,7 +517,7 @@ module.exports = {
 	
 		if (operation === "load") {
 			try {
-				const branch = context.Params.branch ?? 'master'
+				const branch = context.params.branch ?? 'master'
 				const result = await helpers.shell(`git -C D:/dev/node/not-my-stuff/spm-managed-spm/ pull origin ${branch}`);
 				await helpers.message(context, `git pull PepoG ${result.stdout}`);
 			}
