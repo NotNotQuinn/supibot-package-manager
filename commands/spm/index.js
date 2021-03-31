@@ -475,7 +475,7 @@ module.exports = {
 			console.warn("Temp whitelist still active in spm.")
 			return {
 				success: false,
-				reply: 'You cant use this command!',
+				reply: 'Only Quinn can use this command, but you can check the repository here: https://github.com/notnotquinn/supibot-package-manager (branch `custom`) peepoHackies',
 				reason: 'temp-whitelist'
 			};
 		}
@@ -512,7 +512,7 @@ module.exports = {
 	
 		if (operation === "load") {
 			try {
-				const result = await helpers.shell("git -C /code/spm pull origin master");
+				const result = await helpers.shell("git -C D:/dev/node/not-my-stuff/spm/ pull origin master");
 				await helpers.message(context, `git pull PepoG ${result.stdout}`);
 			}
 			catch (e) {
