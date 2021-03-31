@@ -63,7 +63,7 @@ module.exports = {
 				return { updated };
 			}),
 			load: (async (item, options) => {
-				const itemFile = `${options.dir}/${item}/index.js`;
+				const itemFile = `D:/dev/node/not-my-stuff/spm-managed-spm/${options.dir}/${item}/index.js`;
 				if (!await this.staticData.helpers.exists(itemFile)) {
 					console.warn(`index.js file for ${options.name} ${item} does not exist`);
 					return { updated: false };
@@ -519,7 +519,7 @@ module.exports = {
 			try {
 				const branch = context.params.branch ?? 'master'
 				const result = await helpers.shell(`git -C D:/dev/node/not-my-stuff/spm-managed-spm/ pull origin ${branch}`);
-				await helpers.message(context, `git pull PepoG ${result.stdout}`);
+				await helpers.message(context, `git pull origin ${branch} PepoG ${result.stdout}`);
 			}
 			catch (e) {
 				console.error("git pull error", e);
