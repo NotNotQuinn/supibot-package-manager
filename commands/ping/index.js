@@ -23,8 +23,6 @@ module.exports = {
 	Code: (async function ping (context) {
 		const getLoadAverages = require("os").loadavg;
 		const promisify = require("util").promisify;
-		const readFile = require("fs").promises.readFile;
-		const exec = promisify(require("child_process").exec);
 		const chars = {a: "e", e: "i", i: "o", o: "u", u: "y", y: "a"};
 		const si = require("systeminformation")
 		const mem = await si.mem()
@@ -43,7 +41,7 @@ module.exports = {
 		const uptime = sb.Runtime?.started ?? new sb.Date().addSeconds(-process.uptime());
 		const data = {
 			Uptime: sb.Utils.timeDelta(uptime).replace("ago", "").trim(),
-			Temperature: temperature.stdout.match(/([\d.]+)/)[1] + "°C",
+			// Temperature: temperature.stdout.match(/([\d.]+)/)[1] + "°C",
 			"Free memory": sb.Utils.formatByteSize(mem.free, 0) + "/" + sb.Utils.formatByteSize(mem.total, 0),
 			"CPU usage": (min5 === 0)
 				? "No stats available"
