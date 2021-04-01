@@ -26,13 +26,9 @@ module.exports = {
 		const readFile = require("fs").promises.readFile;
 		const exec = promisify(require("child_process").exec);
 		const chars = {a: "e", e: "i", i: "o", o: "u", u: "y", y: "a"};
-	
-		const [temperature, memory] = await Promise.all([
-			exec("/opt/vc/bin/vcgencmd measure_temp"),
-			readFile("/proc/meminfo")
-		]);
-	
-		const memoryData = String(memory).split("\n").filter(Boolean).map(i => Number(i.split(/:\s+/)[1].replace(/kB/, "")) * 1000);
+		const si = require("systeminformation")
+		const mem = await si.mem()
+		console.log({ mem })
 		const pong = "P" + chars[context.invocation[1]] + "ng!";
 	
 		// const [swapTotal, swapFree] = memoryData.slice(14, 16);
@@ -48,7 +44,7 @@ module.exports = {
 		const data = {
 			Uptime: sb.Utils.timeDelta(uptime).replace("ago", "").trim(),
 			Temperature: temperature.stdout.match(/([\d.]+)/)[1] + "°C",
-			"Free memory": sb.Utils.formatByteSize(memoryData[2], 0) + "/" + sb.Utils.formatByteSize(memoryData[0], 0),
+			"Free memory": sb.Utils.formatByteSize(mem.free, 0) + "/" + sb.Utils.formatByteSize(mem.total, 0),
 			"CPU usage": (min5 === 0)
 				? "No stats available"
 				: `${loadDirection}${loadChange}`,
