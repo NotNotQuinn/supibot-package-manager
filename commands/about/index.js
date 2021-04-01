@@ -10,7 +10,7 @@ module.exports = {
 	Static_Data: null,
 	Code: (async function about () {
 		return {	
-			reply: "Supibot is a smol variety and utility bot supiniL running on a smol Raspberry Pi 3B supiniL not primarily designed for moderation supiniHack running on Node.js since Feb 2018."
+			reply: "Wanductbot is a smol variety and utility bot forked from supibot! Not primarily designed for moderation MrDestructoid running on Node.js since Mar 2021."
 		};
 	}),
 	Dynamic_Description: null
