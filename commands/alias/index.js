@@ -53,7 +53,7 @@ module.exports = {
 					}
 				});
 
-				resultArguments.push(parsed);
+				resultArguments.push(...parsed.split(" "));
 			}
 
 			return {
@@ -437,7 +437,7 @@ module.exports = {
 	
 			`<code>${prefix}alias copy (username) (alias)</code>`,
 			`<code>${prefix}alias copyplace (username) (alias)</code>`,
-			"Takes someone else's alias, and attempts to copy it with the same name for you.`," +
+			"Takes someone else's alias, and attempts to copy it with the same name for you.",
 			"If you use <code>copy</code>, it will only create an alias if you don't already have one with that name.",
 			"If you use <code>copyplace</code>, it will replace whatever alias you have with that name without asking.",
 			"",
@@ -449,7 +449,7 @@ module.exports = {
 	
 			`<code>${prefix}alias edit (name)</code>`,
 			"Edits an existing alias, without the need of removing and re-adding it.",
-			`<code>${prefix}alias edit <u>hello</u></code> => "translate to:italian Hello!"`,
+			`<code>${prefix}alias edit <u>hello</u> translate to:italian Hello!</code>`,
 			"",
 
 			`<code>${prefix}alias addedit (name) (definition)</code>`,
