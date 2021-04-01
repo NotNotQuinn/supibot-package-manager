@@ -22,7 +22,6 @@ module.exports = {
 	})),
 	Code: (async function ping (context) {
 		const getLoadAverages = require("os").loadavg;
-		const promisify = require("util").promisify;
 		const chars = {a: "e", e: "i", i: "o", o: "u", u: "y", y: "a"};
 		const si = require("systeminformation")
 		const mem = await si.mem()
