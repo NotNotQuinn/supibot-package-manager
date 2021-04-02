@@ -380,28 +380,6 @@ module.exports = {
 				})
 			},
 			{
-				name: "sr",
-				aliases: ["songrequests"],
-				description: `For supinic's Twitch channel, checks the current status of song requests.`,
-				execute: async (context) => {
-					if (context?.channel.ID !== 38) {
-						return {
-							success: false,
-							reply: "Only usable in Supinic's Twitch channel!"
-						};
-					}
-	
-					const state = sb.Config.get("SONG_REQUESTS_STATE");
-					const pauseString = (state === "vlc" && sb.Config.get("SONG_REQUESTS_VLC_PAUSED"))
-						? "Song requests are paused at the moment."
-						: "";
-	
-					return {
-						reply: `Current song requests status: ${state}. ${pauseString}`
-					};
-				}
-			},
-			{
 				name: "subscription",
 				aliases: ["subscriptions", "sub", "subs"],
 				description: "Fetches the list of your active event subscriptions within Supibot.",
