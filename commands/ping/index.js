@@ -7,21 +7,23 @@ module.exports = {
 	Flags: ["pipe","skip-banphrase"],
 	Params: null,
 	Whitelist_Response: null,
-	Static_Data: (() => ({
-		checkLatency: async (callback, ...args) => {
-			try {
-				const start = process.hrtime.bigint();
-				await callback(...args);
-			
-				return sb.Utils.round(Number(process.hrtime.bigint() - start) / 1.0e6, 3);
-			}
-			catch {
-				return null;
+	Static_Data: (() => {
+		require("loadavg-windows");
+		return {
+			checkLatency: async (callback, ...args) => {
+				try {
+					const start = process.hrtime.bigint();
+					await callback(...args);
+
+					return sb.Utils.round(Number(process.hrtime.bigint() - start) / 1.0e6, 3);
+				}
+				catch {
+					return null;
+				}
 			}
 		}
-	})),
+	}),
 	Code: (async function ping (context) {
-		require("loadavg-windows");
 		const getLoadAverages = require("os").loadavg;
 		const chars = {a: "e", e: "i", i: "o", o: "u", u: "y", y: "a"};
 		const si = require("systeminformation")
