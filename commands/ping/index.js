@@ -25,7 +25,6 @@ module.exports = {
 		const chars = {a: "e", e: "i", i: "o", o: "u", u: "y", y: "a"};
 		const si = require("systeminformation")
 		const mem = await si.mem()
-		console.log({ mem })
 		const pong = "P" + chars[context.invocation[1]] + "ng!";
 	
 		// const [swapTotal, swapFree] = memoryData.slice(14, 16);
