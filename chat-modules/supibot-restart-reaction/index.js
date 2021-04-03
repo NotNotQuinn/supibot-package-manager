@@ -4,11 +4,14 @@ module.exports = {
 	Description: "React to supibot restarting, by restarting.",
 	Code: (async function wannaBecomeFamous (context) {
 
-        console.log(context)
+        if (context.message === 'ppCircle' && context.user.Name === "supibot" && context.channel.Name === "supinic") {
+            console.log("RESTARTED!!! pog");
+            let restart = sb.Command.get("restart");
 
-		const msg = sb.Utils.removeAccents(context.message).toLowerCase();
+            let responce = restart.Code(context);
 
-		const { client } = context.channel.Platform;
+            sb.Platform.get("twitch").client.say(context.channel.Name, responce.reply)
+        }
 		
 	}),
 	Author: "quinndt"
