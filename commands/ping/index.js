@@ -21,6 +21,7 @@ module.exports = {
 		}
 	})),
 	Code: (async function ping (context) {
+		require("loadavg-windows");
 		const getLoadAverages = require("os").loadavg;
 		const chars = {a: "e", e: "i", i: "o", o: "u", u: "y", y: "a"};
 		const si = require("systeminformation")
