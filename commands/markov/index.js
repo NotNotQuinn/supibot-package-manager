@@ -21,6 +21,10 @@ module.exports = {
 				if (!module) {
 					return;
 				}
+				
+				if (!module.data.markovs) {
+					module.data.markovs = new Set()
+				}
 
 				const markov = module.data.markovs.get(sb.Channel.get("forsen"));
 				if (!markov) {
