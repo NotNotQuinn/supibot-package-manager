@@ -1,10 +1,10 @@
 module.exports = {
     Name: "chat-suggestion-linker",
     Events: ["message"],
-    Description: "If a Supibot suggestion ID format is detected, posts a link to it - plus a github link, if the suggestion has one.",
+    Description: "If a Wanductbot suggestion ID format is detected, posts how to check it - plus a github link, if the suggestion has one.",
     Code: (async function liveDetection (context) {
         const { channel, message } = context;
-        const match = message.match(/S#(\d+)/i);
+        const match = message.match(/W#(\d+)/i);
         if (!match) {
             return;
         }
@@ -29,12 +29,16 @@ module.exports = {
             return;
         }
 
-        const siteLink = `https://supinic.com/data/suggestion/${ID}`;
+        const siteLink = `'${sb.Command.prefix}check suggestion ${ID}'`;
         const githubLink = (data.Github_Link)
             ? `https:${data.Github_Link}`
             : "";
 
-        await channel.send(`S#${ID}: ${siteLink} ${githubLink}`);
+        if (!githubLink) {
+            return;
+        }
+
+        await channel.send(`W#${ID}: ${siteLink} ${githubLink}`);
 
         this.data.timeout = now + 5000;
     }),
