@@ -21,8 +21,8 @@ module.exports = {
 			bot: "d:\\dev\\node\\not-my-stuff\\supibot",
 			web: ""
 		},
-		start: {
-			bot: "npm run debug --prefix d:\\dev\\node\\not-my-stuff\\supibot",
+		pm2: {
+			bot: "pm2 restart supibot",
 			web: "echo \"Fatal error: Web does not exist!!!\" && exit 1"
 		}
 	})),
@@ -37,7 +37,7 @@ module.exports = {
 	
 		const queue = [];
 		const dir = this.staticData.dir[processType];
-		const start = this.staticData.start[processType];
+		const pm2 = this.staticData.pm2[processType];
 		const respond = (context.channel)
 			? (string) => context.channel.send(string)
 			: (string) => context.platform.pm(string, context.user.Name);
@@ -55,16 +55,16 @@ module.exports = {
 		}
 		if (types.includes("all") || types.includes("yarn") || types.includes("upgrade")) {
 			queue.push(async () => {
-				await respond("VisLaud 👉 yarn upgrade supi-core");
+				await respond("VisLaud 👉 npm upgrade supi-core");
 	
-				const result = await shell(`yarn --cwd ${dir} upgrade supi-core`);
+				const result = await shell(`npm --prefix ${dir} upgrade supi-core`);
 				console.log("upgrade result", { stdout: result.stdout, stderr: result.stderr });
 			});
 		}
 	
 		queue.push(async () => {
 			await respond("VisLaud 👉 Restarting process");
-			setTimeout(() => shell(start), 1000);
+			setTimeout(() => shell(pm2), 1000);
 		});
 	
 		for (const fn of queue) {
