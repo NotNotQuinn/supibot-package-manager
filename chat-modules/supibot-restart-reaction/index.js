@@ -3,8 +3,8 @@ module.exports = {
 	Events: ["message"],
 	Description: "React to supibot restarting, by restarting.",
 	Code: (async function wannaBecomeFamous (context) {
-
-        if (context.message === 'ppCircle' && context.user.Name === "supibot" && context.channel.Name === "supinic") {
+        let messageToReactTo = 'VisLaud 👉 Restarting process';
+        if (context.message === messageToReactTo && context.user.Name === "supibot" && context.channel.Name === "supinic") {
             console.log("RESTARTED!!! pog");
             let restart = sb.Command.get("restart");
 
