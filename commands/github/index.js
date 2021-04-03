@@ -3,7 +3,7 @@ module.exports = {
 	Aliases: null,
 	Author: "supinic",
 	Cooldown: 5000,
-	Description: "Posts GitHub repository links for Supibot and the website. If you add anything afterwards, a search will be executed for your query on the bot repository.",
+	Description: "Posts GitHub repository links for Wanductbot. If you add anything afterwards, a search will be executed for your query on the bot repository.",
 	Flags: ["developer","mention","non-nullable","pipe"],
 	Params: null,
 	Whitelist_Response: null,
@@ -13,16 +13,15 @@ module.exports = {
 		if (!query) {
 			return {
 				reply: sb.Utils.tag.trim `
-					Supibot: https://github.com/Supinic/supibot 
-					// Website: https://github.com/Supinic/supinic.com
-					// Modules: https://github.com/Supinic/supi-core
-					// SPM: https://github.com/Supinic/supibot-package-manager
+					Wanductbot: https://github.com/NotNotQuinn/supibot
+					// Modules: https://github.com/NotNotQuinn/supi-core
+					// SPM: https://github.com/NotNotQuinn/supibot-package-manager
 				`
 			};
 		}
 	
 		const { items } = await sb.Got("GitHub", {
-			url: `search/code?q=${query}+in:file+repo:supinic/supi-core+repo:supinic/supibot+repo:supinic/supibot-package-manager`
+			url: `search/code?q=${query}+in:file+repo:notnotquinn/supi-core+repo:notnotquinn/supibot+repo:notnotquinn/supibot-package-manager`
 		}).json();
 	
 		const filtered = items.filter(i => i.name.endsWith(".js"));
