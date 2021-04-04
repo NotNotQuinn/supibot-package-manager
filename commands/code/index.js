@@ -27,7 +27,7 @@ module.exports = {
 		}
 	
 		return {
-			reply: `Github: https://github.com/Supinic/supibot-package-manager/blob/custom/commands/${command.Name}/index.js`
+			reply: `Github: https://github.com/notnotquinn/supibot-package-manager/blob/custom/commands/${command.Name}/index.js`
 		};	
 	}),
 	Dynamic_Description: null
