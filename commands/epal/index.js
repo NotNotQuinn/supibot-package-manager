@@ -126,17 +126,6 @@ module.exports = {
 			price
 		} = sb.Utils.randArray(profilesData);
 	
-		if (context.channel?.ID === 38 && sb.Config.get("TTS_ENABLED") && !ttsData.pending) {
-			ttsData.pending = true;
-	
-			await sb.LocalRequest.playSpecialAudio({
-				url: audioFile,
-				volume: sb.Config.get("TTS_VOLUME"),
-				limit: 20_000
-			});
-	
-			ttsData.pending = false;
-		}
 	
 		let suffix = "";
 		let pronoun = "They";
