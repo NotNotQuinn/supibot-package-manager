@@ -50,17 +50,6 @@ module.exports = {
 				}
 			},
 			{
-				name: "alias",
-				aliases: ["aliases"],
-				description: "This sub-command is deprecated, check the alias command instead.",
-				execute: async () => {
-					return {
-						success: false,
-						reply: `Use the ${sb.Command.prefix}alias list command instead! Alternatively, check its help, too.`
-					};
-				}
-			},
-			{
 				name: "ambassador",
 				aliases: ["ambassadors"],
 				description: "Check who is the Supibot ambassador of a channel (or the current one, if none provided).",
@@ -248,61 +237,6 @@ module.exports = {
 				}
 			},
 			{
-				name: "poll",
-				aliases: [],
-				description: `Checks the currently running Supibot-related poll, if there is any.`,
-				execute: async (context, identifier) => {
-					if (identifier && !Number(identifier)) {
-						return {
-							success: false,
-							reply: "Invalid ID provided! Check all polls here: https://supinic.com/bot/poll/list"
-						};
-					}
-	
-					const poll = await sb.Query.getRecordset(rs => {
-						rs.select("Text", "Status", "End", "ID")
-							.from("chat_data", "Poll")
-							.single();
-	
-						if (identifier) {
-							rs.where("ID = %n", Number(identifier));
-						}
-						else {
-							rs.orderBy("ID DESC").limit(1);
-						}
-	
-						return rs;
-					});
-	
-					if (!poll) {
-						return {
-							reply: "No polls match the ID provided! Check all polls here: https://supinic.com/bot/poll/list"
-						};
-					}
-
-					const votes = await sb.Query.getRecordset(rs => rs
-						.select("Vote")
-						.from("chat_data", "Poll_Vote")
-						.where("Poll = %n", poll.ID)
-					);
-
-					if (poll.Status === "Cancelled" || poll.Status === "Active") {
-						const delta = (poll.End < sb.Date.now())
-							? "already ended."
-							: `ends ${sb.Utils.timeDelta(poll.End)}.`;
-	
-						return {
-							reply: `Poll ID ${poll.ID} ${delta} (${poll.Status}) - ${poll.Text} - Votes: ${votes.length}`
-						};
-					}
-	
-					const [yes, no] = sb.Utils.splitByCondition(votes, i => i.Vote === "Yes");
-					return {
-						reply: `Poll ID ${poll.ID} (${poll.Status}) - ${poll.Text} - Votes: ${yes.length}:${no.length}`
-					}
-				}
-			},
-			{
 				name: "reminder",
 				aliases: ["reminders"],
 				description: "Check the status and info of a reminder created by you or for you.",
@@ -370,14 +304,6 @@ module.exports = {
 							: `You have never noted down a "reset" before.`
 					}
 				}
-			},
-			{
-				name: "slots",
-				aliases: [],
-				description: "Posts the link to all winners for the slots command.",
-				execute: () => ({
-					reply: `Check all winners here: https://supinic.com/bot/slots-winner/list`
-				})
 			},
 			{
 				name: "subscription",
