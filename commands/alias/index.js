@@ -72,10 +72,10 @@ module.exports = {
 			return {
 				reply: sb.Utils.tag.trim `
 					This command lets you create your own command aliases.
-					Check the extended help here:
-					https://supinic.com/bot/command/${this.ID}
-					If you created some, check your list here:
-					https://supinic.com/user/alias/list
+					Check the extended help using:
+					${sb.Command.prefix}help alias
+					If you created some, check your list using:
+					${sb.Command.prefix}alias list
 				`
 			};
 		}
@@ -395,8 +395,8 @@ module.exports = {
 				success: false,
 				reply: sb.Utils.tag.trim `
 					Invalid sub-command provided!
-					Check the extended help here:
-				   	https://supinic.com/bot/command/${this.ID}
+					Check the extended help using:
+				   	${sb.Command.prefix}help alias
 				`
 			}
 		}

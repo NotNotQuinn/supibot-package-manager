@@ -469,7 +469,7 @@ module.exports = {
 							status ${status ?? "Pending review"}
 							(posted ${sb.Utils.timeDelta(date)}${updated}):
 							${text}
-							Detail: https://supinic.com/data/suggestion/${ID}
+							Detail: ${sb.Command.prefix}check suggestion ${ID}
 						`
 					};
 				}
@@ -529,7 +529,7 @@ module.exports = {
 		if (!type) {
 			return {
 				success: false,
-				reply: `No type provided! https://supinic.com/bot/command/${this.ID}`
+				reply: `No type provided! Check the help: ${sb.Command.prefix}help ${this.Name}`
 			};
 		}
 	
@@ -537,7 +537,7 @@ module.exports = {
 		if (!item) {
 			return {
 				success: false,
-				reply: `Invalid type provided! https://supinic.com/bot/command/${this.ID}`
+				reply: `Invalid type provided! Check the help: ${sb.Command.prefix}help ${this.Name}`
 			};
 		}
 	

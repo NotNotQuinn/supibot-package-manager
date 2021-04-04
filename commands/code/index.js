@@ -3,7 +3,7 @@ module.exports = {
 	Aliases: null,
 	Author: "supinic",
 	Cooldown: 5000,
-	Description: "Posts a link to a specific command's code definition on supinic.com website.",
+	Description: "Posts a link to a specific command's code definition on github.",
 	Flags: ["developer","mention","pipe"],
 	Params: null,
 	Whitelist_Response: null,
@@ -27,7 +27,7 @@ module.exports = {
 		}
 	
 		return {
-			reply: `Website: https://supinic.com/bot/command/${command.ID}/code`
+			reply: `Github: https://github.com/Supinic/supibot-package-manager/blob/custom/commands/${command.Name}/index.js`
 		};	
 	}),
 	Dynamic_Description: null
