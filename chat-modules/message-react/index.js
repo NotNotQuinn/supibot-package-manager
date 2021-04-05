@@ -2,7 +2,7 @@ module.exports = {
 	Name: "message-react",
 	Events: ["message"],
 	Description: "According to arguments, reacts to a specific message(s) with a determined response.",
-	Code: (async function chatModuleNice (context, ...args) {
+	Code: (async function chatModuleMessageReact (context, ...args) {
 		if (args.length === 0) {
 			return;
 		}
@@ -19,13 +19,46 @@ module.exports = {
 		for (const item of args) {
 			let adjustedMessage = message;
 			let check = item.check;
-			if (item.ignoreCase) {
-				check = check.toLowerCase();
-				adjustedMessage = adjustedMessage.toLowerCase();
+			let passed = false;
+
+			if (typeof check === "string") {
+				if (item.ignoreCase) {
+					check = check.toLowerCase();
+					adjustedMessage = adjustedMessage.toLowerCase();
+				}
+
+				passed = (adjustedMessage === check);
+			}
+			else if (check instanceof RegExp) {
+				passed = check.test(message);
+			}
+			else if (typeof check === "function") {
+				passed = await check(context, message);
+			}
+			else {
+				console.warn("Incorrect chat-module check type", {
+					chatModule: this.Name,
+					channel: channel.ID,
+					item
+				});
 			}
 
-			if (adjustedMessage === check) {
+			if (!passed) {
+				return;
+			}
+
+			if (typeof item.response === "string") {
 				await channel.send(item.response);
+			}
+			else if (typeof item.callback === "function") {
+				await item.callback(context, item);
+			}
+			else {
+				console.warn("Incorrect chat-module response type", {
+					chatModule: this.Name,
+					channel: channel.ID,
+					item
+				});
 			}
 		}
 	}),
