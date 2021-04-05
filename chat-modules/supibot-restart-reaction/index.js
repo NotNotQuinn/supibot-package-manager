@@ -1,18 +1,12 @@
 module.exports = {
 	Name: "supibot-restart-reaction",
 	Events: ["message"],
-	Description: "React to supibot restarting, by restarting.",
+	Description: "React to supibot restarting.",
 	Code: (async function wannaBecomeFamous (context) {
-        let messageToReactTo = 'VisLaud 👉 Restarting process';
+        let messageToReactTo = 'ppCircle';
         if (context.message === messageToReactTo && context.user.Name === "supibot" && context.channel.Name === "supinic") {
-            console.log("RESTARTED!!! pog");
-            let restart = sb.Command.get("restart");
-
-            let responce = restart.Code(context);
-
-            sb.Platform.get("twitch").client.say(context.channel.Name, responce.reply)
+            sb.Platform.get("twitch").client.say(context.channel.Name, "ppCircleHeat ￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼ ppOverheat")
         }
-		
 	}),
 	Author: "quinndt"
 };
