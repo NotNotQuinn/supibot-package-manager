@@ -249,8 +249,11 @@ module.exports = {
 							.from("chat_data", "Reminder")
 							.where("User_To = %n OR User_From = %n", context.user.ID, context.user.ID)
 						)
-						let nonPrivateReminders = reminders.filter(i => i.Private_Message !== 1)
-						let privateReminders = reminders.filter(i => i.Private_Message === 1)
+
+						if (reminders.length === 0) return { reply: "You have never received or created any reminders!" };
+
+						let nonPrivateReminders = reminders.filter(i => i.Private_Message !== true)
+						let privateReminders = reminders.filter(i => i.Private_Message === true)
 						let remindersToSelf = reminders.filter(i => i.User_From === i.User_To)
 						let remindersCreated = nonPrivateReminders.filter(i => i.User_From === context.user.ID && i.User_From !== i.User_To)
 						let remindersReceived = nonPrivateReminders.filter(i => i.User_To === context.user.ID && i.User_From !== i.User_To)
@@ -261,18 +264,17 @@ module.exports = {
 							"To you": `${remindersReceived.map(i => i.ID).join(",")}`,
 							"From you": `${remindersCreated.map(i => i.ID).join(",")}`
 						}
-						console.log({ remindersFormatted, nonPrivateReminders, privateReminders, remindersToSelf, remindersCreated, remindersReceived })
 
 						let remindersFormattedText = Object.entries(remindersFormatted)
 							.filter(i => i[1] !== "")
 							.map(i => `${i[0]}: ${i[1]}`)
 							.join("; ")
 
-						let pmMessage = `Your current reminders: ${remindersFormattedText === "" ? "None!" : remindersFormattedText}`
+						let pmMessage = `Your current reminders: ${remindersFormattedText}`
 
 						await context.platform.pm(pmMessage, context.user.Name)
 						return {
-							reply: "I have PMd you a list of all reminders you created, by id!"
+							reply: "I have messaged you a list of all reminders that involve you!"
 						};
 					}
 	
