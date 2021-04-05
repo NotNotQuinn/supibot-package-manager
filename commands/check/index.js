@@ -243,8 +243,20 @@ module.exports = {
 				execute: async (context, identifier) => {
 					const ID = Number(identifier);
 					if (!ID) {
+						const createdReminders = await sb.Query.getRecordset(rs => rs
+							.select("ID")
+							.from("chat_data", "Reminder")
+							.where("User_From = %n", context.user.ID)
+						);
+						const receivedReminders = await sb.Query.getRecordset(rs => rs
+							.select("ID")
+							.from("chat_data", "Reminder")
+							.where("User_To = %n", context.user.ID)
+						)
+						context.platform.pm()
+						console.log({ createdReminders, receivedReminders })
 						return {
-							reply: "Check all of your reminders here (requires login): https://supinic.com/bot/reminder/list"
+							reply: "I have PMd you a list of all reminders you created, by id!"
 						};
 					}
 	
