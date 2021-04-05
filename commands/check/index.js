@@ -256,17 +256,19 @@ module.exports = {
 						let remindersReceived = nonPrivateReminders.filter(i => i.User_To === context.user.ID && i.User_From !== i.User_To)
 
 						let remindersFormatted = {
-							"Private": privateReminders.length === 0 ? `${privateReminders.map(i => i.ID).join(",")}` : "",
-							"To self": remindersToSelf.length === 0 ? `${remindersToSelf.map(i => i.ID).join(",")}` : "",
-							"To you": remindersReceived.length === 0 ? `${remindersReceived.map(i => i.ID).join(",")}` : "",
-							"From you": remindersCreated.length === 0 ? `${remindersCreated.map(i => i.ID).join(",")}` : ""
+							"Private": `${privateReminders.map(i => i.ID).join(",")}`,
+							"To self":`${remindersToSelf.map(i => i.ID).join(",")}`,
+							"To you": `${remindersReceived.map(i => i.ID).join(",")}`,
+							"From you": `${remindersCreated.map(i => i.ID).join(",")}`
 						}
+						console.log({ remindersFormatted, nonPrivateReminders, privateReminders, remindersToSelf, remindersCreated, remindersReceived })
+
 						let remindersFormattedText = Object.entries(remindersFormatted)
 							.filter(i => i[1] !== "")
 							.map(i => `${i[0]}: ${i[1]}`)
 							.join("; ")
 
-						let pmMessage = `Your current reminders: ${remindersFormattedText}`
+						let pmMessage = `Your current reminders: ${remindersFormattedText === "" ? "None!" : remindersFormattedText}`
 
 						await context.platform.pm(pmMessage, context.user.Name)
 						return {
