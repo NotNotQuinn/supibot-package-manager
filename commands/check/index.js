@@ -249,11 +249,11 @@ module.exports = {
 							.from("chat_data", "Reminder")
 							.where("User_To = %n OR User_From = %n", context.user.ID, context.user.ID)
 						)
-						nonPrivateReminders = reminders.filter(i => i.Private_Message !== 1)
-						privateReminders = reminders.filter(i => i.Private_Message === 1)
-						remindersToSelf = reminders.filter(i => i.User_From === i.User_To)
-						remindersCreated = nonPrivateReminders.filter(i => i.User_From === context.user.ID && i.User_From !== i.User_To)
-						remindersReceived = nonPrivateReminders.filter(i => i.User_To === context.user.ID && i.User_From !== i.User_To)
+						let nonPrivateReminders = reminders.filter(i => i.Private_Message !== 1)
+						let privateReminders = reminders.filter(i => i.Private_Message === 1)
+						let remindersToSelf = reminders.filter(i => i.User_From === i.User_To)
+						let remindersCreated = nonPrivateReminders.filter(i => i.User_From === context.user.ID && i.User_From !== i.User_To)
+						let remindersReceived = nonPrivateReminders.filter(i => i.User_To === context.user.ID && i.User_From !== i.User_To)
 
 						let remindersFormatted = {
 							"Private": privateReminders.length === 0 ? `${privateReminders.map(i => i.ID).join(",")}` : "",
