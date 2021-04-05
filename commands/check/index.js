@@ -268,7 +268,7 @@ module.exports = {
 
 						let pmMessage = `Your current reminders: ${remindersFormattedText}`
 
-						await context.platform.pm(context.user.Name, pmMessage)
+						await context.platform.pm(pmMessage, context.user.Name)
 						return {
 							reply: "I have PMd you a list of all reminders you created, by id!"
 						};
