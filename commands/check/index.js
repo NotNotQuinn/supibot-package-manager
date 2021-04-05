@@ -243,18 +243,32 @@ module.exports = {
 				execute: async (context, identifier) => {
 					const ID = Number(identifier);
 					if (!ID) {
-						const createdReminders = await sb.Query.getRecordset(rs => rs
-							.select("ID")
+						/** @type Array */
+						let reminders = await sb.Query.getRecordset(rs => rs
+							.select("ID", "User_From", "User_To", "Private_Message")
 							.from("chat_data", "Reminder")
-							.where("User_From = %n", context.user.ID)
-						);
-						const receivedReminders = await sb.Query.getRecordset(rs => rs
-							.select("ID")
-							.from("chat_data", "Reminder")
-							.where("User_To = %n", context.user.ID)
+							.where("User_To = %n OR User_From = %n", context.user.ID, context.user.ID)
 						)
-						context.platform.pm()
-						console.log({ createdReminders, receivedReminders })
+						nonPrivateReminders = reminders.filter(i => i.Private_Message !== 1)
+						privateReminders = reminders.filter(i => i.Private_Message === 1)
+						remindersToSelf = reminders.filter(i => i.User_From === i.User_To)
+						remindersCreated = nonPrivateReminders.filter(i => i.User_From === context.user.ID && i.User_From !== i.User_To)
+						remindersReceived = nonPrivateReminders.filter(i => i.User_To === context.user.ID && i.User_From !== i.User_To)
+
+						let remindersFormatted = {
+							"Private": privateReminders.length === 0 ? `${privateReminders.map(i => i.ID).join(",")}` : "",
+							"To self": remindersToSelf.length === 0 ? `${remindersToSelf.map(i => i.ID).join(",")}` : "",
+							"To you": remindersReceived.length === 0 ? `${remindersReceived.map(i => i.ID).join(",")}` : "",
+							"From you": remindersCreated.length === 0 ? `${remindersCreated.map(i => i.ID).join(",")}` : ""
+						}
+						let remindersFormattedText = Object.entries(remindersFormatted)
+							.filter(i => i[1] !== "")
+							.map(i => `${i[0]}: ${i[1]}`)
+							.join("; ")
+
+						let pmMessage = `Your current reminders: ${remindersFormattedText}`
+
+						await context.platform.pm(context.user.Name, pmMessage)
 						return {
 							reply: "I have PMd you a list of all reminders you created, by id!"
 						};
