@@ -55,6 +55,13 @@ module.exports = {
 					: `pastebin dot com // Commands: ${allCommandsPasteID}`
 			};
 		}
+
+		const command = sb.Command.get(commandString);
+
+
+		if (command == null) {
+			return {
+				reply: "That command does not exist!"
 			};
 		}
 		else if (context.invocation === "helpgrep") {
