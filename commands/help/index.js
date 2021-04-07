@@ -11,13 +11,50 @@ module.exports = {
 	Code: (async function help (context, ...args) {
 		const prefix = sb.Config.get("COMMAND_PREFIX");
 		const [commandString] = args;
-
-		// No specified command - print all available commands in given channel for given user
 		if (!commandString || context.invocation === "commands") {
+			const key = { type: "all-commands-description-paste-id" };
+			let allCommandsPasteID = await this.getCacheData(key);
+			if (!allCommandsPasteID) {
+				let helpinfo = "The commands for Wanductbot:\n\n";
+				let commandsList = sb.Query.getRecordset(rs => rs
+						.select("Name", "Description", "Cooldown", "ID", "Aliases")
+						.from("chat_data", "command")
+						.orderBy("Name ASC")
+					)
+				for (let i=0; i < commandsList.length; i++) {
+					let cmd = commandsList[i]
+					let aliases = "";
+					if(typeof cmd.Aliases === "string") {
+						aliases = ` (${JSON.parse(cmd.Aliases).map(i => `${prefix}${i}`).join(", ")})`
+					}
+					helpinfo += `${cmd.name}${aliases}`
+					helpinfo += ` - ${cmd.Description}\n`
+				}
+
+				const result = await sb.Pastebin.post(helpinfo, {
+					name: `All commands list for Wanductbot!`,
+					expiration: "1D"
+				});
+
+				if (result.success !== true) {
+					console.error("commands paste error", { result })
+					return {
+						success: false,
+						reply: "Something went wrong posing the paste, and there wasnt one cached, sorry!"
+					};
+				}
+				let splitPasteLink = result.body.split("/")
+				allCommandsPasteID = splitPasteLink[splitPasteLink.length - 1];
+				await this.setCacheData(key, allCommandsPasteID, {
+					expiry: 863e5
+				});
+			}
 			return {
 				reply: (!context.channel || context.channel.Links_Allowed)
-					? "Commands available here: https://supinic.com/bot/command/list - Also check the FAQ here: https://supinic.com/data/faq/list"
-					: "For the command and FAQ list, check out the Supibot tab on supinic dot com."
+					? `Commands information here: https://pastebin.com/${allCommandsPasteID}`
+					: `pastebin dot com // Commands: ${allCommandsPasteID}`
+			};
+		}
 			};
 		}
 		else if (context.invocation === "helpgrep") {
