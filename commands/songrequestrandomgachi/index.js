@@ -7,8 +7,6 @@ module.exports = {
 	Flags: ["skip-banphrase","use-params","whitelist"],
 	Params: [
 		{ name: "fav", type: "string" },
-		{ name: "favorite", type: "string" },
-		{ name: "favourite", type: "string" }
 	],
 	Whitelist_Response: "Only available in specific whitelisted channels (for instance, those that have a song request bot that replies to \"!sr\").",
 	Static_Data: (() => ({
@@ -18,13 +16,13 @@ module.exports = {
 		let link = null;
 		let counter = 0;
 		const rg = sb.Command.get("rg");
-		const passedContext = {
+		const passedContext = sb.Command.createFakeContext(rg, {
+			...context,
 			params: {
-				linkOnly: true,
-				...context.params
-			},
-			...context
-		}
+				...context.params,
+				linkOnly: true
+			}
+		});
 	
 		while (!link && counter < this.staticData.repeatLimit) {
 			const execution = await rg.execute(passedContext, "linkOnly:true", ...args);
