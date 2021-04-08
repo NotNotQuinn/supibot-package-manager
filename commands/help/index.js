@@ -16,7 +16,7 @@ module.exports = {
 			let allCommandsPasteID = await this.getCacheData(key);
 			if (!allCommandsPasteID) {
 				let helpinfo = "The commands for Wanductbot:\n\n";
-				let commandsList = sb.Query.getRecordset(rs => rs
+				let commandsList = await sb.Query.getRecordset(rs => rs
 						.select("Name", "Description", "Cooldown", "ID", "Aliases")
 						.from("chat_data", "command")
 						.orderBy("Name ASC")
@@ -27,13 +27,12 @@ module.exports = {
 					if(typeof cmd.Aliases === "string") {
 						aliases = ` (${JSON.parse(cmd.Aliases).map(i => `${prefix}${i}`).join(", ")})`
 					}
-					helpinfo += `${cmd.name}${aliases}`
-					helpinfo += ` - ${cmd.Description}\n`
+					helpinfo = `${cmd.name}${aliases} - ${cmd.Description}\n`
 				}
 
 				const result = await sb.Pastebin.post(helpinfo, {
 					name: `All commands list for Wanductbot!`,
-					expiration: "1D"
+					expiration: "1H"
 				});
 
 				if (result.success !== true) {
@@ -46,7 +45,7 @@ module.exports = {
 				let splitPasteLink = result.body.split("/")
 				allCommandsPasteID = splitPasteLink[splitPasteLink.length - 1];
 				await this.setCacheData(key, allCommandsPasteID, {
-					expiry: 863e5
+					expiry: 36e5
 				});
 			}
 			return {
@@ -101,8 +100,7 @@ module.exports = {
 				prefix + command.Name + aliases + ":",
 				command.Description || "(no description)",
 				"- " + sb.Utils.round(command.Cooldown / 1000, 1) + " seconds cooldown.",
-				filteredResponse,
-				"https://supinic.com/bot/command/" + command.ID
+				filteredResponse
 			];
 	
 			return { reply: reply.join(" ") };
