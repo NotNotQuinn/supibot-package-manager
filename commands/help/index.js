@@ -55,7 +55,7 @@ module.exports = {
 
 			
 				let splitPasteLink = result.split(".")
-				// link is like this: https://haste.zniex.eu/THISISANID.EXT
+				// link is like this: https://haste.zniex.eu/THIS-IS-AN-ID.EXT
 				allCommandsPasteID = splitPasteLink[splitPasteLink.length - 2];
 				await this.setCacheData(key, allCommandsPasteID, {
 					expiry: 36e5
