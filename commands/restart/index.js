@@ -57,7 +57,7 @@ module.exports = {
 			queue.push(async () => {
 				await respond("VisLaud 👉 npm upgrade supi-core");
 	
-				const result = await shell(`npm --prefix ${dir} upgrade supi-core`);
+				const result = await shell(`cd ${dir} && npm upgrade supi-core`);
 				console.log("upgrade result", { stdout: result.stdout, stderr: result.stderr });
 			});
 		}
