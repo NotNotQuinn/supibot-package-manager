@@ -20,7 +20,7 @@ module.exports = {
 			const key = { type: "commands-link" };
 			let allCommandsPasteID = context.params.force ? null : (await this.getCacheData(key));
 			if (!allCommandsPasteID) {
-				const hastebin = require("hastbin-gen")
+				const hastebin = require("hastebin-gen")
 				let helpinfo = "The commands for Wanductbot:\n\n";
 				let commandsList = await sb.Query.getRecordset(rs => rs
 						.select("Name", "Description", "Cooldown", "ID", "Aliases")
