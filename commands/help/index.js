@@ -5,64 +5,70 @@ module.exports = {
 	Cooldown: 5000,
 	Description: "Posts either: a short list of all commands, or a description of a specific command if you specify it.",
 	Flags: ["mention","pipe"],
-	Params: null,
+	Params: [
+		{
+			name: "",
+			type: "boolean"
+		}
+	],
 	Whitelist_Response: null,
 	Static_Data: null,
 	Code: (async function help (context, ...args) {
-		const prefix = sb.Config.get("COMMAND_PREFIX");
+		const prefix = sb.Command.prefix;
 		const [commandString] = args;
 		if (!commandString || context.invocation === "commands") {
-			const key = { type: "all-commands-description-paste-id" };
-			let allCommandsPasteID = await this.getCacheData(key);
+			const key = { type: "commands-link" };
+			let allCommandsPasteID = context.params.force ? null : (await this.getCacheData(key));
 			if (!allCommandsPasteID) {
+				const hastebin = require("hastbin-gen")
 				let helpinfo = "The commands for Wanductbot:\n\n";
 				let commandsList = await sb.Query.getRecordset(rs => rs
 						.select("Name", "Description", "Cooldown", "ID", "Aliases")
 						.from("chat_data", "command")
 						.orderBy("Name ASC")
 					)
+				console.log({ commandsList })
 				for (let i=0; i < commandsList.length; i++) {
 					let cmd = commandsList[i]
 					let aliases = "";
 					if(typeof cmd.Aliases === "string") {
 						aliases = ` (${JSON.parse(cmd.Aliases).map(i => `${prefix}${i}`).join(", ")})`
 					}
-					helpinfo = `${cmd.name}${aliases} - ${cmd.Description}\n`
+					helpinfo += `${cmd.name}${aliases} - ${cmd.Description}\n`
 				}
-
-				const result = await sb.Pastebin.post(helpinfo, {
-					name: `All commands list for Wanductbot!`,
-					expiration: "1H"
-				});
+				try {
+					const result = await hastebin(helpinfo, {
+						url: "https://haste.zneix.eu", 
+						extension: "txt"
+					});
+				} catch (e) {
+					
+				}
 
 				if (result.success !== true) {
 					console.error("commands paste error", { result })
+					allCommandsPasteID = await this.getCacheData(key);
 					return {
 						success: false,
-						reply: "Something went wrong posing the paste, and there wasnt one cached, sorry!"
-					};
+						reply: ((!context.channel || context.channel.Links_Allowed)
+						? `Commands information here: https://pastebin.com/${allCommandsPasteID} Not refreshed (!)`
+						: `pastebin dot com // Commands: ${allCommandsPasteID} Not refreshed (!)`)
+					}
 				}
-				let splitPasteLink = result.body.split("/")
+			
+				let splitPasteLink = result
 				allCommandsPasteID = splitPasteLink[splitPasteLink.length - 1];
 				await this.setCacheData(key, allCommandsPasteID, {
 					expiry: 36e5
 				});
 			}
-			return {
-				reply: (!context.channel || context.channel.Links_Allowed)
-					? `Commands information here: https://pastebin.com/${allCommandsPasteID}`
-					: `pastebin dot com // Commands: ${allCommandsPasteID}`
-			};
-		}
-
-		const command = sb.Command.get(commandString);
-
-
-		if (command == null) {
-			return {
-				reply: "That command does not exist!"
-			};
-		}
+		return {
+			reply: (!context.channel || context.channel.Links_Allowed)
+				? `Commands information here: https://pastebin.com/${allCommandsPasteID}`
+				: `pastebin dot com // Commands: ${allCommandsPasteID}`
+		};
+	}
+		// No specified command - print all available commands in given channel for given user
 		else if (context.invocation === "helpgrep") {
 			const query = args.join(" ");
 			const eligible = sb.Command.data.filter(command =>
