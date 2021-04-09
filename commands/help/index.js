@@ -17,7 +17,7 @@ module.exports = {
 		const prefix = sb.Command.prefix;
 		const [commandString] = args;
 		if (!commandString || context.invocation === "commands") {
-			const key = { type: "commands-link" };
+			const key = { type: "commands-link-id" };
 			let allCommandsPasteID = context.params.force ? null : (await this.getCacheData(key));
 			if (!allCommandsPasteID) {
 				const hastebin = require("hastebin-gen")
@@ -54,16 +54,17 @@ module.exports = {
 				}
 
 			
-				let splitPasteLink = result
-				allCommandsPasteID = splitPasteLink[splitPasteLink.length - 1];
+				let splitPasteLink = result.split(".")
+				// link is like this: https://haste.zniex.eu/THISISANID.EXT
+				allCommandsPasteID = splitPasteLink[splitPasteLink.length - 2];
 				await this.setCacheData(key, allCommandsPasteID, {
 					expiry: 36e5
 				});
 			}
 		return {
 			reply: (!context.channel || context.channel.Links_Allowed)
-				? `Commands information here: https://pastebin.com/${allCommandsPasteID}`
-				: `pastebin dot com // Commands: ${allCommandsPasteID}`
+				? `Commands information here: https://haste.zneix.eu/${allCommandsPasteID}`
+				: `4Head ..`
 		};
 	}
 		// No specified command - print all available commands in given channel for given user
