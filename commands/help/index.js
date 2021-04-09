@@ -36,16 +36,13 @@ module.exports = {
 					}
 					helpinfo += `${cmd.name}${aliases} - ${cmd.Description}\n`
 				}
+				let result;
 				try {
-					const result = await hastebin(helpinfo, {
+					result = await hastebin(helpinfo, {
 						url: "https://haste.zneix.eu", 
 						extension: "txt"
 					});
 				} catch (e) {
-					
-				}
-
-				if (result.success !== true) {
 					console.error("commands paste error", { result })
 					allCommandsPasteID = await this.getCacheData(key);
 					return {
@@ -55,6 +52,7 @@ module.exports = {
 						: `pastebin dot com // Commands: ${allCommandsPasteID} Not refreshed (!)`)
 					}
 				}
+
 			
 				let splitPasteLink = result
 				allCommandsPasteID = splitPasteLink[splitPasteLink.length - 1];
