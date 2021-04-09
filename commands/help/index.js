@@ -18,8 +18,8 @@ module.exports = {
 		const [commandString] = args;
 		if (!commandString || context.invocation === "commands") {
 			const key = { type: "commands-link-id" };
-			let allCommandsPasteID = context.params.force ? null : (await this.getCacheData(key));
-			if (!allCommandsPasteID) {
+			let allCommandsPasteLink = context.params.force ? null : (await this.getCacheData(key));
+			if (!allCommandsPasteLink) {
 				const hastebin = require("hastebin-gen")
 				let helpinfo = "The commands for Wanductbot:\n\n";
 				let commandsList = await sb.Query.getRecordset(rs => rs
@@ -27,14 +27,18 @@ module.exports = {
 						.from("chat_data", "command")
 						.orderBy("Name ASC")
 					)
-				console.log({ commandsList })
 				for (let i=0; i < commandsList.length; i++) {
-					let cmd = commandsList[i]
-					let aliases = "";
-					if(typeof cmd.Aliases === "string") {
-						aliases = ` (${JSON.parse(cmd.Aliases).map(i => `${prefix}${i}`).join(", ")})`
-					}
-					helpinfo += `${cmd.Name}${aliases} - ${cmd.Description}\n`
+					let command = commandsList[i]
+					const filteredResponse = (command.Flags.whitelist) ? "(whitelisted)" : "";
+					const aliases = (command.Aliases.length === 0) ? "" : (" (" + command.Aliases.map(i => prefix + i).join(", ") + ")");
+			
+					helpinfo +=  [
+						prefix + command.Name + aliases + ":",
+						command.Description || "(no description)",
+						"- " + sb.Utils.round(command.Cooldown / 1000, 1) + " seconds cooldown.",
+						filteredResponse
+					].join("\n    ") + "\n";
+					
 				}
 				let result;
 				try {
@@ -44,26 +48,21 @@ module.exports = {
 					});
 				} catch (e) {
 					console.error("commands paste error", { result })
-					allCommandsPasteID = await this.getCacheData(key);
+					allCommandsPasteLink = await this.getCacheData(key);
+					if(allCommandsPasteLink == null) allCommandsPasteLink = "<NOT FOUND>" ;
 					return {
 						success: false,
 						reply: ((!context.channel || context.channel.Links_Allowed)
-						? `Commands information here: https://pastebin.com/${allCommandsPasteID} Not refreshed (!)`
-						: `pastebin dot com // Commands: ${allCommandsPasteID} Not refreshed (!)`)
+						? `Commands information here: ${allCommandsPasteLink} Not refreshed (!)`
+						: `Commands: ${allCommandsPasteLink} Not refreshed (!)`)
 					}
 				}
-
-			
-				let splitPasteLink = result.split(/\.|\//)
-				// link is like this: https://haste.zniex.eu/THIS-IS-AN-ID.EXT
-				allCommandsPasteID = splitPasteLink[splitPasteLink.length - 2];
-				await this.setCacheData(key, allCommandsPasteID, {
-					expiry: 36e5
-				});
+				allCommandsPasteLink = result;
+				await this.setCacheData(key, allCommandsPasteLink);
 			}
 		return {
 			reply: (!context.channel || context.channel.Links_Allowed)
-				? `Commands information here: https://haste.zneix.eu/${allCommandsPasteID}`
+				? `Commands information here: ${allCommandsPasteLink}`
 				: `4Head ..`
 		};
 	}
