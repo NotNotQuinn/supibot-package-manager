@@ -7,7 +7,7 @@ module.exports = {
 	Flags: ["mention","pipe"],
 	Params: [
 		{
-			name: "",
+			name: "force",
 			type: "boolean"
 		}
 	],
@@ -34,7 +34,7 @@ module.exports = {
 					if(typeof cmd.Aliases === "string") {
 						aliases = ` (${JSON.parse(cmd.Aliases).map(i => `${prefix}${i}`).join(", ")})`
 					}
-					helpinfo += `${cmd.name}${aliases} - ${cmd.Description}\n`
+					helpinfo += `${cmd.Name}${aliases} - ${cmd.Description}\n`
 				}
 				let result;
 				try {
