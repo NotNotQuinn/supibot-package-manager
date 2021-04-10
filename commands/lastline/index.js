@@ -26,25 +26,13 @@ module.exports = {
 			return { reply: "You're right here NaM I can see you" };
 		}
 	
-		let data = null;
-		if ([7, 8, 46].includes(context.channel.ID)) {
-			data = (await sb.Query.getRecordset(rs => rs
-				.select("Last_Message_Text AS Message", "Last_Message_Posted AS Posted")
-				.from("chat_data", "Message_Meta_User_Alias")
-				.where("User_Alias = %n", userID)
-				.where("Channel IN (7, 8, 46)")
-				.orderBy("Last_Message_Posted DESC")
-			))[0];
-		}
-		else {
-			data = (await sb.Query.getRecordset(rs => rs
+		let data = (await sb.Query.getRecordset(rs => rs
 				.select("Last_Message_Text AS Message", "Last_Message_Posted AS Posted")
 				.from("chat_data", "Message_Meta_User_Alias")
 				.where("User_Alias = %n", userID)
 				.where("Channel = %n", context.channel.ID)
 			))[0];
-		}
-	
+		
 		if (!data) {
 			return { reply: "That user has not said anything in this channel!" };
 		}
