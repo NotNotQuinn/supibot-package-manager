@@ -36,16 +36,13 @@ module.exports = {
 			};
 		}
 	
-		const channels = (context.channel.ID === 7 || context.channel.ID === 8)
-			? [7, 8, 46]
-			: [context.channel.ID];
-	
+
 		const top = await sb.Query.getRecordset(rs => rs
 			.select("SUM(Message_Count) AS Total")
 			.select("User_Alias.Name AS Name")
 			.from("chat_data", "Message_Meta_User_Alias")
 			.join("chat_data", "User_Alias")
-			.where("Channel IN %n+", channels)
+			.where("Channel = %n", context.channel.ID)
 			.groupBy("User_Alias")
 			.orderBy("SUM(Message_Count) DESC")
 			.limit(limit)

@@ -21,23 +21,13 @@ module.exports = {
 			user = context.user;
 		}
 	
-		let lines = null;
-		if ([7, 8, 46].includes(context.channel.ID)) {
-			lines = (await sb.Query.getRecordset(rs => rs
-				.select("SUM(Message_Count) AS Total")
-				.from("chat_data", "Message_Meta_User_Alias")
-				.where("User_Alias = %n", user.ID)
-				.where("Channel IN(7, 8, 46)")
-			))[0];
-		}
-		else {
-			lines = (await sb.Query.getRecordset(rs => rs
+		let lines = (await sb.Query.getRecordset(rs => rs
 				.select("Message_Count AS Total")
 				.from("chat_data", "Message_Meta_User_Alias")
 				.where("User_Alias = %n", user.ID)
 				.where("Channel = %n", context.channel.ID)
 			))[0]
-		}
+
 		if (!lines) {
 			return {
 				reply: "That user has sent no chat lines in this channel!"
