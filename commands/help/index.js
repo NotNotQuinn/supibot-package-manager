@@ -24,14 +24,16 @@ module.exports = {
 				let helpinfo = "The commands for Wanductbot:\n\n";
 				/** @type {Array} */
 				let commandsList = await sb.Query.getRecordset(rs => rs
-						.select("Name", "Description", "Cooldown", "ID", "Aliases", "Flags")
+						.select("Name")
 						.from("chat_data", "command")
 						.orderBy("Name ASC")
 					)
 				for (let i=0; i < commandsList.length; i++) {
-					let command = commandsList[i]
-					command.Flags = command.Flags?.length === "string" ? JSON.parse(command.Flags) : []
-					command.Aliases = command.Aliases?.length === "string" ? JSON.parse(command.Aliases) : []
+					let command;
+					try{
+						command = sb.Command.get(commandsList[i].Name)
+					} catch { continue; }
+
 					const filteredResponse = (command.Flags.whitelist) ? "(whitelisted)" : "";
 					const aliases = (command.Aliases.length === 0) ? "" : (" (" + command.Aliases.map(i => prefix + i).join(", ") + ")");
 			
