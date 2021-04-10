@@ -31,12 +31,7 @@ module.exports = {
 			.select("User_Alias")
 			.from("chat_data", "Message_Meta_User_Alias")
 			.where("User_Alias = %n", targetUser.ID)
-			.where(
-				"Channel IN %n+",
-				[7, 8, 46].includes(context.channel.ID)
-					? [7, 8, 46]
-					: [context.channel.ID]
-			)
+			.where("Channel = %n", context.channel.ID)
 			.limit(1)
 			.flat("User_Alias")
 			.single()
@@ -49,33 +44,7 @@ module.exports = {
 			};
 		}
 	
-		let line;
-		if ([7, 8, 46].includes(context.channel.ID)) {
-			const promises = [7, 8, 46].map(async ID => {
-				const channelData = sb.Channel.get(ID);
-				return await sb.Query.getRecordset(rs => rs
-				    .select("Text", "Posted")
-					.from("chat_line", channelData.getDatabaseName())
-					.where("User_Alias = %n", targetUser.ID)
-					.orderBy("ID ASC")
-					.limit(1)
-					.single()
-				);
-			})
-	
-			const lineData = (await Promise.all(promises)).filter(Boolean);
-			if (!lineData) {
-				return {
-					success: false,
-					reply: "No chat lines found?!"
-				};
-			}
-	
-			lineData.sort((a, b) => a.Posted - b.Posted);
-			line = lineData[0];
-		}
-		else {
-			line = await sb.Query.getRecordset(rs => rs
+		let line = await sb.Query.getRecordset(rs => rs
 			    .select("Text", "Posted")
 				.from("chat_line", context.channel.getDatabaseName())
 				.where("User_Alias = %n", targetUser.ID)
@@ -83,7 +52,7 @@ module.exports = {
 				.limit(1)
 				.single()
 			);
-		}
+		
 	
 		if (!line) {
 			return {
