@@ -7,7 +7,9 @@ module.exports = {
 	Flags: ["mention","non-nullable","pipe","use-params"],
 	Params: [
 		{ name: "comments", type: "boolean" },
-		{ name: "linkOnly", type: "boolean" }
+		{ name: "flair", type: "string" },
+		{ name: "linkOnly", type: "boolean" },
+		{ name: "showFlairs", type: "boolean" }
 	],
 	Whitelist_Response: null,
 	Static_Data: (() => {
@@ -23,7 +25,7 @@ module.exports = {
 			#quarantine = null;
 			#nsfw = null;
 			#expiration = -Infinity;
-			posts = [];
+			#posts = [];
 			repeatedPosts = [];
 	
 			constructor (meta) {
@@ -47,7 +49,16 @@ module.exports = {
 			setExpiration () {
 				this.#expiration = new sb.Date().addMilliseconds(expiration);
 			}
-	
+
+			addPosts (data) {
+				this.#posts = data.map(i => new RedditPost(i.data));
+			}
+
+			get availableFlairs () {
+				return new Set(this.#posts.flatMap(i => i.flairs));
+			}
+
+			get posts () { return this.#posts; }
 			get expiration () { return this.#expiration; }
 			get error () { return this.#error; }
 			get exists () { return this.#exists; }
@@ -64,7 +75,8 @@ module.exports = {
 			#title;
 			#url;
 			#commentsUrl;
-	
+
+			#flairs = [];
 			#crosspostOrigin = null;
 			#isTextPost = false;
 			#nsfw = false;
@@ -87,6 +99,7 @@ module.exports = {
 				this.#url = data.url;
 				this.#commentsUrl = `r/${data.subreddit}/comments/${data.id}`;
 
+				this.#flairs = data.link_flair_richtext.filter(i => i.t && i.e === "text").map(i => i.t.trim());
 				this.#isTextPost = Boolean(data.selftext && data.selftext_html);
 				this.#nsfw = Boolean(data.over_18) || crossPostNSFW;
 				this.#stickied = Boolean(data.stickied);
@@ -100,11 +113,27 @@ module.exports = {
 			get isTextPost () { return this.#isTextPost; }
 			get url () { return this.#url; }
 			get commentsUrl () { return this.#commentsUrl; }
+			get flairs () { return this.#flairs; }
 	
 			get posted () {
 				return sb.Utils.timeDelta(this.#created);
 			}
-	
+
+			hasFlair (flair, caseSensitive = false) {
+				if (!caseSensitive) {
+					flair = flair.toLowerCase();
+				}
+
+				return this.#flairs.some(i => {
+					if (!caseSensitive) {
+						return (i.toLowerCase() === flair);
+					}
+					else {
+						return (i === flair);
+					}
+				})
+			}
+
 			toString () {
 				const xpost = (this.#crosspostOrigin)
 					? `, x-posted from ${this.#crosspostOrigin}`
@@ -153,7 +182,8 @@ module.exports = {
 	
 		const input = (args.shift() ?? sb.Utils.randArray(this.staticData.defaultMemeSubreddits));
 		const subreddit = encodeURIComponent(input.toLowerCase());
-	
+
+		/** @type {Subreddit} */
 		let forum = this.data.subreddits[subreddit];
 		if (!forum) {
 			const { statusCode, body: response } = await sb.Got("Reddit", subreddit + "/about.json");
@@ -200,7 +230,16 @@ module.exports = {
 			}
 	
 			forum.setExpiration();
-			forum.posts = response.data.children.map(i => new this.staticData.RedditPost(i.data));
+			forum.addPosts(response.data.children);
+		}
+
+		if (context.params.showFlairs) {
+			const flairs = forum.availableFlairs;
+			return {
+				reply: (flairs.size === 0)
+					? "There are no flairs available in this subreddit."
+					: "Available flairs for this subreddit: " + [...flairs].sort().join(", ")
+			};
 		}
 	
 		const { posts, repeatedPosts } = forum;
@@ -210,6 +249,7 @@ module.exports = {
 			&& !i.isSelftext
 			&& !i.isTextPost
 			&& !repeatedPosts.includes(i.id)
+			&& (!context.params.flair || i.hasFlair(context.params.flair, false))
 		));
 	
 		const post = sb.Utils.randArray(validPosts);
@@ -266,6 +306,14 @@ module.exports = {
 			"Posts a random post from the specified subreddit.",
 			"NSFW-marked subreddits are not available outside of channels marked for that content.",
 			"NSFW-marked posts will be filtered out in channels not marked for that content.",
+			"",
+
+			`<code>${prefix}rm (subreddit) flair:(flair)</code>`,
+			"If a flair is provided, only the posts that contain such flair will be used (case-insensitive).",
+			"",
+
+			`<code>${prefix}rm (subreddit) showFlairs:true</code>`,
+			"Posts a list of available flairs for given subreddit.",
 			"",
 
 			`<code>${prefix}rm linkOnly:true</code>`,

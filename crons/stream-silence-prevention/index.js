@@ -12,6 +12,9 @@ module.exports = {
 		const twitch = sb.Platform.get("twitch");
 		const cytube = sb.Platform.get("cytube");
 		const channelData = sb.Channel.get("supinic", "twitch");
+		const cytubeChannelData = sb.Channel.get(49);
+
+
 		const streamData = await channelData.getStreamData();
 		if (!streamData.live) {
 			return;
@@ -28,7 +31,7 @@ module.exports = {
 			isQueueEmpty = (queue.length === 0);
 		}
 		else if (state === "cytube") {
-			isQueueEmpty = (cytube.controller.playlistData.length === 0);
+			isQueueEmpty = (cytube.controller.clients.get(cytubeChannelData).playlistData.length === 0);
 		}
 	
 		if (!isQueueEmpty) {
@@ -54,9 +57,20 @@ module.exports = {
 		}
 		else {
 			const rg = sb.Command.get("rg");
-			const context = sb.Command.createFakeContext(rg);
-			const randomResult = await rg.execute(context, "fav:supinic linkOnly:true");
-			link = randomResult.link;
+			const context = sb.Command.createFakeContext(rg, {
+				params: {
+					fav: "supinic",
+					linkOnly: true
+				}
+			});
+
+			const randomResult = await rg.execute(context);
+			if (randomResult.success === false) {
+				await channelData.send("Could not fetch song data! :(");
+				return;
+			}
+
+			link = randomResult.reply;
 		}
 	
 		let result = "";
@@ -69,7 +83,10 @@ module.exports = {
 			result = commandResult.reply;
 		}
 		else if (state === "cytube") {
-			await cytube.controller.queue("yt", videoID);
+			const videoID = sb.Utils.linkParser.parseLink(link);
+			const client = cytube.controller.clients.get(cytubeChannelData);
+
+			client.queue("yt", videoID);
 			result = `Silence prevention! Successfully added ${link} to Cytube (hopefully).`;
 		}
 		
