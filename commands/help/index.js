@@ -30,8 +30,8 @@ module.exports = {
 					)
 				for (let i=0; i < commandsList.length; i++) {
 					let command = commandsList[i]
-					command.Flags = command.Flags.length === "string" ? JSON.parse(command.Flags) : command.Flags
-					command.Aliases = command.Aliases.length === "string" ? JSON.parse(command.Aliases) : command.Aliases
+					command.Flags = command.Flags?.length === "string" ? JSON.parse(command.Flags) : []
+					command.Aliases = command.Aliases?.length === "string" ? JSON.parse(command.Aliases) : []
 					const filteredResponse = (command.Flags.whitelist) ? "(whitelisted)" : "";
 					const aliases = (command.Aliases.length === 0) ? "" : (" (" + command.Aliases.map(i => prefix + i).join(", ") + ")");
 			
