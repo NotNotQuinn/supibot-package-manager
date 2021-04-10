@@ -4,7 +4,7 @@ module.exports = {
 	Author: "supinic",
 	Cooldown: 5000,
 	Description: "Transforms a suggestion that you have created into a Github issue, thus \"elevating\" its status. Only usable by people who have linked their Github account via the supinic.com website.",
-	Flags: ["developer","mention","non-nullable","opt-out"],
+	Flags: ["archived","developer","mention","non-nullable","opt-out"],
 	Params: null,
 	Whitelist_Response: null,
 	Static_Data: (() => ({

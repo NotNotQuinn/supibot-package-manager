@@ -4,7 +4,7 @@ module.exports = {
 	Author: "supinic",
 	Cooldown: 5000,
 	Description: "Posts a command for cerebot to execute.",
-	Flags: ["pipe","skip-banphrase","system","whitelist"],
+	Flags: ["archived", "pipe","skip-banphrase","system","whitelist"],
 	Params: null,
 	Whitelist_Response: null,
 	Static_Data: null,

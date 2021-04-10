@@ -4,7 +4,7 @@ module.exports = {
 	Author: "supinic",
 	Cooldown: 5000,
 	Description: "If you have at least one song playing or in the queue, this command will skip the first one. You can also add an ID to skip a specific song.",
-	Flags: ["mention","pipe","whitelist"],
+	Flags: ["archived","mention","pipe","whitelist"],
 	Params: null,
 	Whitelist_Response: null,
 	Static_Data: null,

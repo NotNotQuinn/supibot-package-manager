@@ -4,7 +4,7 @@ module.exports = {
 	Author: "supinic",
 	Cooldown: 10000,
 	Description: "Posts the link of gachimuchi list on supinic.com",
-	Flags: ["mention","pipe"],
+	Flags: ["archived","mention","pipe"],
 	Params: null,
 	Whitelist_Response: null,
 	Static_Data: null,

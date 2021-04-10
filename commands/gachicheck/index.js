@@ -4,7 +4,7 @@ module.exports = {
 	Author: "supinic",
 	Cooldown: 2500,
 	Description: "Checks if a given gachi link exists in the database, if not, adds it to the todo list to be processed later.",
-	Flags: ["mention","pipe","skip-banphrase"],
+	Flags: ["archived","mention","pipe","skip-banphrase"],
 	Params: null,
 	Whitelist_Response: null,
 	Static_Data: (() => ({
