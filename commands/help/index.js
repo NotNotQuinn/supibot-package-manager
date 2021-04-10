@@ -22,22 +22,24 @@ module.exports = {
 			if (!allCommandsPasteLink) {
 				const hastebin = require("hastebin-gen")
 				let helpinfo = "The commands for Wanductbot:\n\n";
+				/** @type {Array} */
 				let commandsList = await sb.Query.getRecordset(rs => rs
-						.select("Name", "Description", "Cooldown", "ID", "Aliases")
+						.select("Name", "Description", "Cooldown", "ID", "Aliases", "Flags")
 						.from("chat_data", "command")
 						.orderBy("Name ASC")
 					)
 				for (let i=0; i < commandsList.length; i++) {
 					let command = commandsList[i]
+					command.Flags = command.Flags.length === "string" ? JSON.parse(command.Flags) : command.Flags
+					command.Aliases = command.Aliases.length === "string" ? JSON.parse(command.Aliases) : command.Aliases
 					const filteredResponse = (command.Flags.whitelist) ? "(whitelisted)" : "";
 					const aliases = (command.Aliases.length === 0) ? "" : (" (" + command.Aliases.map(i => prefix + i).join(", ") + ")");
 			
 					helpinfo +=  [
-						prefix + command.Name + aliases + ":",
+						prefix + command.Name + aliases + ": " + filteredResponse,
 						command.Description || "(no description)",
-						"- " + sb.Utils.round(command.Cooldown / 1000, 1) + " seconds cooldown.",
-						filteredResponse
-					].join("\n    ") + "\n";
+						sb.Utils.round(command.Cooldown / 1000, 2) + " seconds cooldown."
+					].join("\n    ") + "\n\n";
 					
 				}
 				let result;
