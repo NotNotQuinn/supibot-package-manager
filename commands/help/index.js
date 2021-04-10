@@ -30,35 +30,38 @@ module.exports = {
 					)
 				for (let i=0; i < commandsList.length; i++) {
 					let command;
-					try{
-						command = sb.Command.get(commandsList[i].Name)
-					} catch { continue; }
 
-					const filteredResponse = (command.Flags.whitelist) ? "(whitelisted)" : "";
-					const aliases = (command.Aliases.length === 0) ? "" : (" (" + command.Aliases.map(i => prefix + i).join(", ") + ")");
+					command = sb.Command.get(commandsList[i].Name)
+					if(!command) continue;
+
+					const filteredResponse = (command.Flags?.whitelist) ? "(whitelisted)" : "";
+					const aliases = (command.Aliases?.length === 0) ? "" : (" (" + command.Aliases.map(i => prefix + i).join(", ") + ")");
 			
 					helpinfo +=  [
 						prefix + command.Name + aliases + ": " + filteredResponse,
-						command.Description || "(no description)",
-						sb.Utils.round(command.Cooldown / 1000, 2) + " seconds cooldown."
-					].join("\n    ") + "\n\n";
+						"    " + command.Description || "(no description)",
+						"    " + sb.Utils.round(command.Cooldown / 1000, 2) + " seconds cooldown."
+					].join("\n") + "\n\n";
 					
 				}
 				let result;
 				try {
 					result = await hastebin(helpinfo, {
-						url: "https://haste.zneix.eu", 
+						url: "https://haste.zneix.eu",
 						extension: "txt"
 					});
 				} catch (e) {
-					console.error("commands paste error", { result })
+					console.error("commands paste error", { result, error: e })
 					allCommandsPasteLink = await this.getCacheData(key);
-					if(allCommandsPasteLink == null) allCommandsPasteLink = "<NOT FOUND>" ;
+					if(allCommandsPasteLink == null) return {
+						success: false,
+						reply: "Unable to post command data."
+					};
 					return {
 						success: false,
 						reply: ((!context.channel || context.channel.Links_Allowed)
-						? `Commands information here: ${allCommandsPasteLink} Not refreshed (!)`
-						: `Commands: ${allCommandsPasteLink} Not refreshed (!)`)
+						? `Commands information here: ${allCommandsPasteLink} Not refreshed (❗)`
+						: `4Head .. Not refreshed (❗)`)
 					}
 				}
 				allCommandsPasteLink = result;
