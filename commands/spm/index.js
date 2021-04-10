@@ -13,6 +13,7 @@ module.exports = {
 	],
 	Whitelist_Response: "Only Quinn can use this command, but you can check the repository here: https://github.com/notnotquinn/supibot-package-manager peepoHackies",
 	Static_Data: (() => ({
+		rootDir: 'D:/dev/node/not-my-stuff/spm-managed-spm',
 		operations: ["dump", "load"],
 		helpers: {
 			fs: require("fs").promises,
@@ -20,7 +21,7 @@ module.exports = {
 			shell: require("util").promisify(require("child_process").exec),
 			save: (async (item, options) => {
 				const fs = require("fs").promises;
-				const dir = `D:/dev/node/not-my-stuff/spm-managed-spm/${options.dir}/${item.Name}`;
+				const dir = `${this.staticData.rootDir}/${options.dir}/${item.Name}`;
 				if (!await this.staticData.helpers.exists(dir)) {
 					await fs.mkdir(dir);
 				}
@@ -63,7 +64,7 @@ module.exports = {
 				return { updated };
 			}),
 			load: (async (item, options) => {
-				const itemFile = `D:/dev/node/not-my-stuff/spm-managed-spm/${options.dir}/${item}/index.js`;
+				const itemFile = `${this.staticData.rootDir}/${options.dir}/${item}/index.js`;
 				if (!await this.staticData.helpers.exists(itemFile)) {
 					console.warn(`index.js file for ${options.name} ${item} does not exist`);
 					return { updated: false };
@@ -72,7 +73,7 @@ module.exports = {
 				// Fetch the latest commit for a given file
 				const shellResult = await this.staticData.helpers.shell(sb.Utils.tag.trim `
 					git
-					-C D:/dev/node/not-my-stuff/spm-managed-spm/
+					-C ${this.staticData.rootDir}/
 					log -n 1
 					--pretty=format:%H
 					-- ${options.dir}/${item}/index.js
@@ -185,7 +186,7 @@ module.exports = {
 					const added = [];
 					const commandDirs = (args.length > 0)
 						? args.map(i => sb.Command.get(i)?.Name ?? i)
-						: await helpers.fs.readdir("D:/dev/node/not-my-stuff/spm-managed-spm/commands");
+						: await helpers.fs.readdir(`${this.staticData.rootDir}/commands`);
 	
 					const promises = commandDirs.map(async (command) => {
 						const result = await helpers.load(command, {
@@ -280,7 +281,7 @@ module.exports = {
 					const added = [];
 					const moduleDirs = (args.length > 0)
 						? args.map(i => sb.ChatModule.get(i)?.Name ?? i)
-						: await helpers.fs.readdir("D:/dev/node/not-my-stuff/spm-managed-spm/chat-modules");
+						: await helpers.fs.readdir(`${this.staticData.rootDir}/chat-modules`);
 	
 					const promises = moduleDirs.map(async (chatModule) => {
 						const result = await helpers.load(chatModule, {
@@ -359,7 +360,7 @@ module.exports = {
 					const added = [];
 					const cronDirs = (args.length > 0)
 						? args.map(i => sb.Cron.get(i)?.Name ?? i)
-						: await helpers.fs.readdir("D:/dev/node/not-my-stuff/spm-managed-spm/crons");
+						: await helpers.fs.readdir(`${this.staticData.rootDir}/crons`);
 	
 					const promises = cronDirs.map(async (cron) => {
 						const result = await helpers.load(cron, {
@@ -438,7 +439,7 @@ module.exports = {
 					const added = [];
 					const cronDirs = (args.length > 0)
 						? args.map(i => sb.Cron.get(i)?.Name ?? i)
-						: await helpers.fs.readdir("D:/dev/node/not-my-stuff/spm-managed-spm/crons");
+						: await helpers.fs.readdir(`${this.staticData.rootDir}/crons`);
 	
 					const promises = cronDirs.map(async (cron) => {
 						const result = await helpers.load(cron, {
@@ -518,9 +519,8 @@ module.exports = {
 		if (operation === "load") {
 			try {
 				const branch = context.params.branch ?? 'custom'
-				const source = 'origin';
-				const result = await helpers.shell(`git -C D:/dev/node/not-my-stuff/spm-managed-spm/ pull ${source} ${branch}`);
-				await helpers.message(context, `git pull ${source} ${branch} PepoG ${result.stdout}`);
+				const result = await helpers.shell(`git -C ${this.staticData.rootDir}/ pull origin ${branch}`);
+				await helpers.message(context, `git pull origin ${branch} PepoG ${result.stdout}`);
 			}
 			catch (e) {
 				console.error("git pull error", e);
