@@ -9,6 +9,10 @@ module.exports = {
 		{
 			"name": "branch",
 			"type": "string"
+		},
+		{
+			name: "upstream",
+			type: "boolean"
 		}
 	],
 	Whitelist_Response: "Only Quinn can use this command, but you can check the repository here: https://github.com/notnotquinn/supibot-package-manager peepoHackies",
@@ -518,8 +522,9 @@ module.exports = {
 		if (operation === "load") {
 			try {
 				const branch = context.params.branch ?? 'custom'
-				const result = await helpers.shell(`git -C D:/dev/node/not-my-stuff/spm-managed-spm/ pull origin ${branch}`);
-				await helpers.message(context, `git pull origin ${branch} PepoG ${result.stdout}`);
+				const source = context.params.upstream ? 'upstream' : 'origin'
+				const result = await helpers.shell(`git -C D:/dev/node/not-my-stuff/spm-managed-spm/ pull ${source} ${branch}`);
+				await helpers.message(context, `git pull ${source} ${branch} PepoG ${result.stdout}`);
 			}
 			catch (e) {
 				console.error("git pull error", e);
