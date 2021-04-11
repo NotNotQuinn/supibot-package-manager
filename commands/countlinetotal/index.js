@@ -35,7 +35,7 @@ module.exports = {
 			const originalSize = Number(history.Result.match(/([\d.]+) GB of space/)[1]);
 			const rate = sb.Utils.round((currentSize - originalSize) / days, 3);
 			const megabytesPerHour = sb.Utils.round(rate * 1024 / 24, 3);
-			const fillDate = new sb.Date().addDays((220 - currentSize) / rate); // 238 GB minus an estimate of ~18GB of other stuff
+			const fillDate = new sb.Date().addDays((875 - currentSize) / rate); // 931 GB minus an estimate of ~56GB of other stuff
 			historyText = (megabytesPerHour === 0) ? 
 				(sb.Utils.tag.trim `
 					Lines are added at a rate of ~${megabytesPerHour} MB/hr.
