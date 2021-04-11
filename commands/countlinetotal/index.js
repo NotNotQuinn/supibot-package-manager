@@ -3,7 +3,7 @@ module.exports = {
 	Aliases: ["clt"],
 	Author: "supinic",
 	Cooldown: 30000,
-	Description: "Fetches the amount of data lines from ALL the log tables Supibot uses, including the total size and a prediction of when the storage will run out.",
+	Description: "Fetches the amount of data lines from ALL the log tables Wanductbot uses, including the total size and a prediction of when the storage will run out.",
 	Flags: ["mention"],
 	Params: null,
 	Whitelist_Response: null,
@@ -39,10 +39,10 @@ module.exports = {
 			historyText = (megabytesPerHour === 0) ? 
 				(sb.Utils.tag.trim `
 					Lines are added at a rate of ~${megabytesPerHour} MB/hr.
-					At this rate, its impossible to calculate when Supibot's hard drive will fill.`) :
+					At this rate, its impossible to calculate when Wanductbot's hard drive will fill.`) :
 				(sb.Utils.tag.trim `
 					Lines are added at a rate of ~${megabytesPerHour} MB/hr.
-					At this rate, Supibot's hard drive will run out of space approximately on ${fillDate.format("Y-m-d")}.`)
+					At this rate, Wanductbot's hard drive will run out of space approximately on ${fillDate.format("Y-m-d")}.`)
 		}
 
 		const cooldown = {};
