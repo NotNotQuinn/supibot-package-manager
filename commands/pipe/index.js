@@ -81,6 +81,7 @@ module.exports = {
 				{
 					...context.append,
 					platform: context.platform,
+					alias: options.append.alias,
 					pipe: true,
 					skipBanphrases: true,
 					skipPending: true,
