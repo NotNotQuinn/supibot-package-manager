@@ -31,7 +31,7 @@ module.exports = {
 			isQueueEmpty = (queue.length === 0);
 		}
 		else if (state === "cytube") {
-			isQueueEmpty = (cytube.controller.clients.get(cytubeChannelData).playlistData.length === 0);
+			isQueueEmpty = (cytube.controller.clients.get(cytubeChannelData.ID).playlistData.length === 0);
 		}
 	
 		if (!isQueueEmpty) {
@@ -73,23 +73,23 @@ module.exports = {
 			link = randomResult.reply;
 		}
 	
-		let result = "";
+		// let result = "";
 		if (state === "vlc") {
 			const self = await sb.User.get("supibot");
 			const sr = sb.Command.get("sr");
 
 			const fakeContext = { params: {}, user: self, channel: channelData, platform: twitch };
-			const commandResult = await sr.execute(fakeContext, link);
-			result = commandResult.reply;
+			await sr.execute(fakeContext, link);
+			// result = commandResult.reply;
 		}
 		else if (state === "cytube") {
 			const videoID = sb.Utils.linkParser.parseLink(link);
-			const client = cytube.controller.clients.get(cytubeChannelData);
+			const client = cytube.controller.clients.get(cytubeChannelData.ID);
 
 			client.queue("yt", videoID);
-			result = `Silence prevention! Successfully added ${link} to Cytube (hopefully).`;
+			// result = `Silence prevention! Successfully added ${link} to Cytube (hopefully).`;
 		}
 		
-		await channelData.send(result);
+		// await channelData.send(result);
 	})
 };
