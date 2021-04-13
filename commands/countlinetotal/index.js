@@ -36,13 +36,10 @@ module.exports = {
 			const rate = sb.Utils.round((currentSize - originalSize) / days, 3);
 			const megabytesPerHour = sb.Utils.round(rate * 1024 / 24, 3);
 			const fillDate = new sb.Date().addDays((875 - currentSize) / rate); // 931 GB minus an estimate of ~56GB of other stuff
-			historyText = (megabytesPerHour === 0) ? 
-				(sb.Utils.tag.trim `
-					Lines are added at a rate of ~${megabytesPerHour} MB/hr.
-					At this rate, its impossible to calculate when Wanductbot's hard drive will fill.`) :
-				(sb.Utils.tag.trim `
-					Lines are added at a rate of ~${megabytesPerHour} MB/hr.
-					At this rate, Wanductbot's hard drive will run out of space approximately on ${fillDate.format("Y-m-d")}.`)
+			history = `Lines are added at a rate of ~${megabytesPerHour} MB/hr. `
+			historyText += (megabytesPerHour === 0) ? 
+				(`At this rate, its impossible to calculate when Wanductbot's hard drive will fill.`) :
+				(`At this rate, Wanductbot's hard drive will run out of space approximately on ${fillDate.format("Y-m-d")}.`)
 		}
 
 		const cooldown = {};
