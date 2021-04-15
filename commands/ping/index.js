@@ -84,11 +84,13 @@ module.exports = {
 			ping = Math.trunc(ping);
 
 			let suffix = "";
-			/** @type {string} */
-			let supibotLatency = sb?.ChatModule?.get("save-supibot-ping")?.data?.supibot_latency;
-
-			if (supibotLatency && supibotLatency - ping > 0) {
-				suffix = ` [${supibotLatency - ping}ms faster than supibot.]`
+			if (context.channel.Name == "supinic") {
+				/** @type {string} */
+				let supibotLatency = sb?.ChatModule?.get("save-supibot-ping")?.data?.supibot_latency;
+	
+				if (supibotLatency && supibotLatency - ping > 0) {
+					suffix = ` [${supibotLatency - ping}ms faster than supibot.]`
+				}
 			}
 
 			data["Latency to TMI"] = (ping === null)
