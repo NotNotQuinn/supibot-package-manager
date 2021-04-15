@@ -78,13 +78,22 @@ module.exports = {
 		}
 	
 		if (context.platform.Name === "twitch") {
-			const ping = await this.staticData.checkLatency(
+			let ping = await this.staticData.checkLatency(
 				async () => context.platform.client.ping()
 			);
-	
+			ping = Math.trunc(ping);
+
+			let suffix = "";
+			/** @type {string} */
+			let supibotLatency = sb?.ChatModule?.get("save-supibot-ping")?.data?.supibot_latency;
+
+			if (supibotLatency && supibotLatency - ping > 0) {
+				suffix = ` [${supibotLatency - ping}ms faster than supibot.]`
+			}
+
 			data["Latency to TMI"] = (ping === null)
 				? "No response from Twitch (?)"
-				: `${Math.trunc(ping)}ms`;
+				: `${ping}ms${suffix}`;
 		}
 	
 		return {
