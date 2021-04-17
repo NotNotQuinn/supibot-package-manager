@@ -96,7 +96,8 @@ module.exports = {
 			let batch = sb.Query.getBatch("data", "aliased_command", 
 				["User_Alias", "Name", "Invocation", "Args", "Description", "Created", "Last_Edit"]);
 
-			for (const alias of oldAliases) {
+			for (const aliasName in oldAliases) {
+				const alias = oldAliases[aliasName];
 				batch.add({
 					"User_Alias": context.user.ID,
 					"Name": alias.name,
