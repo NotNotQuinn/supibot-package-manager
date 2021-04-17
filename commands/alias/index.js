@@ -90,6 +90,31 @@ module.exports = {
 		let reply = "Unexpected reply! Contact @Supinic about this.";
 		const wrapper = new Map(Object.entries(context.user.Data.aliasedCommands));
 	
+		if (context.user.Data.aliasedCommands && !context.user.Data.aliasesMigrated) {
+			// migrate the aliases from user.Data to the table `data`.`aliased_command`
+			const oldAliases = context.user.Data.aliasedCommands;
+			let batch = sb.Query.getBatch("data", "aliased_command", 
+				["User_Alias", "Name", "Invocation", "Args", "Description", "Created", "Last_Edit"]);
+
+			for (const alias of oldAliases) {
+				batch.add({
+					"User_Alias": context.user.ID,
+					"Name": alias.name,
+					"Invocation": alias.invocation,
+					"Args": alias.args?.join(" ") ?? [],
+					"Description": alias?.desc ?? null,
+					"Created": new sb.Date(alias.created),
+					"Last_Edit": (alias.lastEdit == null)
+						? new sb.Date(alias.lastEdit)
+						: null
+				})
+			}
+
+			batch.insert();
+			context.user.Data.aliasesMigrated = true;
+			await context.user.saveProperty("Data");
+		}
+
 		type = type.toLowerCase();
 		switch (type) {
 			case "add":
