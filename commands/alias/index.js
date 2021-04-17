@@ -93,7 +93,7 @@ module.exports = {
 		if (context.user.Data.aliasedCommands && !context.user.Data.aliasesMigrated) {
 			// migrate the aliases from user.Data to the table `data`.`aliased_command`
 			const oldAliases = context.user.Data.aliasedCommands;
-			let batch = sb.Query.getBatch("data", "aliased_command", 
+			let batch = await sb.Query.getBatch("data", "aliased_command", 
 				["User_Alias", "Name", "Invocation", "Args", "Description", "Created", "Last_Edit"]);
 
 			for (const aliasName in oldAliases) {
