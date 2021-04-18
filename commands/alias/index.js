@@ -106,12 +106,12 @@ module.exports = {
 					"Description": alias?.desc ?? null,
 					"Created": new sb.Date(alias.created),
 					"Last_Edit": (alias.lastEdit == null)
-						? new sb.Date(alias.lastEdit)
-						: null
+						? null
+						: new sb.Date(alias.lastEdit)
 				})
 			}
 
-			batch.insert();
+			await batch.insert();
 			context.user.Data.aliasesMigrated = true;
 			await context.user.saveProperty("Data");
 		}
