@@ -13,13 +13,12 @@ module.exports = {
 	Code: (async function origin (context, emote) {
 		if (!emote) {
 			return {
-				success: false,
-				reply: "No emote provided!"
+				reply: "Check the emote origin list here: https://supinic.com/data/origin/list"
 			};
 		}
 	
 		const emoteData = await sb.Query.getRecordset(rs => rs
-			.select("Text", "Tier", "Type", "Todo", "Approved", "Emote_Added", "Author")
+			.select("ID", "Text", "Tier", "Type", "Todo", "Emote_Added", "Author")
 			.from("data", "Origin")
 			.where("Name COLLATE utf8mb4_bin LIKE %s", emote)
 		);
@@ -45,12 +44,6 @@ module.exports = {
 				reply: "No emote definition exists for this index!"
 			};
 		}
-		else if (!data.Approved) {
-			return {
-				success: false,
-				reply: "A definition exists, but has not been approved yet!"
-			};
-		}
 		else {
 			let authorString = "";
 			if (data.Author) {
@@ -63,10 +56,11 @@ module.exports = {
 				addedString = `Added on ${data.Emote_Added.format("Y-m-d")}.`;
 			}
 
+			const link = `https://supinic.com/data/origin/detail/${data.ID}`;
 			const type = (data.Tier) ? `T${data.Tier}` : "";
 			return {
 				reply: sb.Utils.tag.trim `
-					${data.Todo ? "(needs more info)" : ""}
+					${link}					
 					${type} ${data.Type} emote:
 					${data.Text}
 					${addedString}

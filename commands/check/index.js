@@ -310,7 +310,11 @@ module.exports = {
 					const ID = Number(identifier);
 					if (!ID) {
 						return {
-							reply: "Check all of your reminders here (requires login): https://supinic.com/bot/reminder/list"
+							reply: sb.Utils.tag.trim `
+								Check all of your reminders here (requires login):
+							 	Active - https://supinic.com/bot/reminder/list
+							 	History - https://supinic.com/bot/reminder/history
+							`
 						};
 					}
 	
@@ -543,6 +547,46 @@ module.exports = {
 							? `There are currently no blacklisted TL flags in this channel.`
 							: `Currently blacklisted flags in this channel: ${flags.join(", ")}`
 					};
+				}
+			},
+			{
+				name: "userdatalength",
+				aliases: ["udl"],
+				description: "Checks the size of a user's (or yours) Data within Supibot.",
+				execute: async (context, user) => {
+					const userData = await sb.User.get(user ?? context.user);
+					if (!userData) {
+						return {
+							success: false,
+							reply: "Invalid user provided!"
+						};
+					}
+
+					const length = await sb.Query.getRecordset(rs => rs
+					    .select("LENGTH(IFNULL(Data, '')) AS Size")
+					    .from("chat_data", "User_Alias")
+						.where("ID = %n", userData.ID)
+						.limit(1)
+						.single()
+						.flat("Size")
+					);
+
+					if (typeof length !== "number") {
+						return {
+							success: false,
+							reply: `Could not retrieve the user data length!`
+						};
+					}
+					else {
+						// 65k = limit of TEXT (current User_Alias.Data type)
+						const percent = sb.Utils.round((length / 65335) * 100, 2);
+						const prefix = (context.user === userData) ? "Your" : "Their";
+						const size = sb.Utils.formatByteSize(length);
+
+						return {
+							reply: `${prefix} user data currently occupies ${size} (${percent}% of maximum) in Supibot's database.`
+						};
+					}
 				}
 			}
 		]
