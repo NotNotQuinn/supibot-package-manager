@@ -4,7 +4,7 @@ module.exports = {
     Author: "supinic",
     Cooldown: 5000,
     Description: "Crypto game command! Receive the equivalent of €1000 on your \"portfolio\" and invest them into various currencies and assets to see how well you can increase your worth. Who shall become the best investor Supibot-land has ever known?",
-    Flags: ["mention","non-nullable","pipe"],
+    Flags: ["archived","mention","non-nullable","pipe"],
     Params: null,
     Whitelist_Response: null,
     Static_Data: (() => {
