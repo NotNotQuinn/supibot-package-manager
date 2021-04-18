@@ -61,6 +61,51 @@ module.exports = {
 				success: true,
 				resultArguments
 			};
+		},
+		helpers: {
+			/** @returns {Promise<boolean>} */
+			hasAlias: async (user, aliasName) => {
+				let userID = (await sb.User.get(user)).ID;
+				/** @type {Alias[]} */
+				let aliases = await sb.Query.getRecordset(rs=>rs
+					.select("Name")
+					.from("data", "aliased_command")
+					.where("Name = %s", aliasName)
+					.where("User_Alias = %n", userID)
+					)
+				return (aliases.length !== 0);
+			},
+			/**
+			 * Gets an alias - by name and user.
+			 * @param {sb.User|number|string} user User to get alias from
+			 * @param {string} aliasName Name of alias to get
+			 * @returns {Promise<Alias|null>}
+			 */
+			getAlias: async (user, aliasName) => {
+				let userID = (await sb.User.get(user)).ID;
+				/** @type {Alias} */
+				let response = await sb.Query.getRecordset(rs=>rs
+					.select("*")
+					.from("data", "aliased_command")
+					.where("Name = %s", aliasName)
+					.where("User_Alias = %n", userID)
+					.limit(1)
+					.single()
+					)
+				response.Args = response.Args.split(" ");
+				if (!response) return null; else return response;
+			},
+			/**
+			 * 
+			 * @param {sb.User|number|string} user User to delete alias from
+			 * @param {string} aliasName Name of alias to delete
+			 * @returns {Promise<void>}
+			 */
+			deleteAlias: async (user, aliasName) => {
+				throw new sb.errors.NotImplemented({
+					message: "Helper function deleteAlias not implemened."
+				})
+			}
 		}
 	})),
 	Code: (async function alias (context, type, ...args) {
@@ -85,10 +130,6 @@ module.exports = {
 			context.user.Data.aliasedCommands = {};
 			await context.user.saveProperty("Data");
 		}
-	
-		let changed = false;
-		let reply = "Unexpected reply! Contact @Supinic about this.";
-		const wrapper = new Map(Object.entries(context.user.Data.aliasedCommands));
 	
 		if (context.user.Data.aliasedCommands && !context.user.Data.aliasesMigrated) {
 			// migrate the aliases from user.Data to the table `data`.`aliased_command`
@@ -115,6 +156,11 @@ module.exports = {
 			context.user.Data.aliasesMigrated = true;
 			await context.user.saveProperty("Data");
 		}
+
+		let changed = false;
+		let reply = "Unexpected reply! Contact @Supinic about this.";
+		const wrapper = new Map(Object.entries(context.user.Data.aliasedCommands));
+	
 
 		type = type.toLowerCase();
 		switch (type) {
@@ -708,3 +754,17 @@ module.exports = {
 		];
 	})
 };
+
+/**
+ * @typedef Alias
+ * @property {number} ID ID of this alias
+ * @property {string} Name Name of this alias
+ * @property {number|null} User_Alias User ID of owner
+ * @property {number|null} Channel Channel this alias belongs to
+ * @property {string} Invocation Invocation of command this alias uses
+ * @property {string[]} Args Arguments passed to the alias when executing
+ * @property {string} Description User-provided description of this alias
+ * @property {sb.Date} Created Creation date of this alias
+ * @property {sb.Date|null} Last_Edit Last edit of this alias
+ * @property {number|null} Copy_Of ID of an alias this is a copy of
+ */
