@@ -6,7 +6,7 @@ module.exports = {
         const { message, user } = context;
     
         let supibot = await sb.User.get("supibot");
-        if (user.ID != supibot.ID) return;
+        if (user?.ID != supibot?.ID) return;
 
         const regex = /^P.ng!.*Latency to TMI: (\d+)ms/
         if (regex.test(message)) {
