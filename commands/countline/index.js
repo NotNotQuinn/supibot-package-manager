@@ -9,6 +9,13 @@ module.exports = {
 	Whitelist_Response: null,
 	Static_Data: null,
 	Code: (async function countLine (context, user) {
+		if (!context.channel) {
+			return {
+				success: false,
+				reply: `This command is not available here!`
+			};
+		}
+		
 		if (user) {
 			user = await sb.User.get(user, true);
 			if (!user) {

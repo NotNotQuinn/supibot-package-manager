@@ -110,11 +110,20 @@ module.exports = {
 					.set("key", sb.Config.get("API_GOOGLE_GEOCODING"))
 					.toString()
 			}).json();
-	
+
 			if (!geoData) {
+				const userData = await sb.User.get(args[0]);
+				if (userData && userData.Data.location) {
+					return {
+						success: false,
+						reply: `That place was not found! However, you probably meant to check that user's location - make sure to add the @ symbol before their name.`,
+						cooldown: 5000
+					};
+				}
+
 				return {
 					success: false,
-					reply: "No place matching that query has been found!"
+					reply: "That place was not found! FeelsBadMan"
 				};
 			}
 			else {
