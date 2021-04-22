@@ -63,7 +63,6 @@ module.exports = {
 			};
 		},
 		helpers: {
-			/** @returns {Promise<boolean>} */
 			hasAlias: async (user, aliasName) => {
 				let userID = (await sb.User.get(user)).ID;
 				/** @type {Alias[]} */
@@ -75,12 +74,6 @@ module.exports = {
 					)
 				return (aliases.length !== 0);
 			},
-			/**
-			 * Gets an alias - by name and user.
-			 * @param {sb.User|number|string} user User to get alias from
-			 * @param {string} aliasName Name of alias to get
-			 * @returns {Promise<Alias|null>}
-			 */
 			getAlias: async (user, aliasName) => {
 				let userID = (await sb.User.get(user)).ID;
 				/** @type {Alias} */
@@ -93,18 +86,24 @@ module.exports = {
 					.single()
 					)
 				response.Args = response.Args.split(" ");
-				if (!response) return null; else return response;
+				return response ?? null;
 			},
-			/**
-			 * 
-			 * @param {sb.User|number|string} user User to delete alias from
-			 * @param {string} aliasName Name of alias to delete
-			 * @returns {Promise<void>}
-			 */
 			deleteAlias: async (user, aliasName) => {
-				throw new sb.errors.NotImplemented({
-					message: "Helper function deleteAlias not implemened."
-				})
+				let userID = (await sb.User.get(user)).ID;
+				await sb.Query.getRecordDeleter(rd=>rd
+					.delete()
+					.from("data", "aliased_command")
+					.where("Name = %s", aliasName)
+					.where("User_Alias = %n", userID)
+					)
+			},
+			setAlias: async (user, aliasName) => {
+				let userID = (await sb.User.get(user)).ID;
+				await sb.Query.getRecordUpdater(ru=>ru
+					.update("data", "aliased_command")
+					.where("Name = %s", aliasName)
+					.where("User_Alias = %n", userID)
+					)
 			}
 		}
 	})),
@@ -161,6 +160,7 @@ module.exports = {
 		let reply = "Unexpected reply! Contact @Supinic about this.";
 		const wrapper = new Map(Object.entries(context.user.Data.aliasedCommands));
 	
+		const { helpers } = this.staticData;
 
 		type = type.toLowerCase();
 		switch (type) {
@@ -175,7 +175,7 @@ module.exports = {
 						reply: `You didn't provide a name, or a command! Use: alias add (name) (command) (...arguments)"`
 					};
 				}
-				else if (wrapper.has(name) && type !== "addedit" && type !== "upsert") {
+				else if (helpers.hasAlias(context.user, name) && type !== "addedit" && type !== "upsert") {
 					return {
 						success: false,
 						reply: `Cannot add alias "${name}" - you already have one! You can either _edit_ its definion, _rename_ it or _remove_ it.`
@@ -222,16 +222,16 @@ module.exports = {
 						reply: `Check all your aliases here: https://supinic.com/bot/user/${context.user.Name}/alias/list`
 					};
 				}
-				else if (!wrapper.has(name)) {
+				else if (!helpers.hasAlias(context.user, name)) {
 					return {
 						success: false,
 						reply: `You don't have the "${name}" alias!`
 					};
 				}
 	
-				const { invocation, args: commandArgs } = wrapper.get(name);
+				const { Invocation, Args: commandArgs } = helpers.getAlias(context.user, name);
 				return {
-					reply: `Your alias "${name}" has this definition: ${invocation} ${commandArgs.join(" ")}`
+					reply: `Your alias "${name}" has this definition: ${Invocation} ${commandArgs.join(" ")}`
 				};
 			}
 
@@ -293,7 +293,7 @@ module.exports = {
 						reply: `You didn't provide a name, or a command! Use: alias add (name) (command) (...arguments)"`
 					};
 				}
-				else if (!wrapper.has(name)) {
+				else if (!helpers.hasAlias(context.user, name)) {
 					return {
 						success: false,
 						reply: `You don't have the "${name}" alias!`
@@ -309,19 +309,20 @@ module.exports = {
 				}
 
 				let verb;
-				const obj = wrapper.get(name);
+				/** @type {Alias} */
+				const obj = helpers.getAlias(context.user, name);
 				if (description.length === 0 || description === "none") {
-					obj.desc = "";
+					obj.Description = "";
 					verb = "reset";
 				}
 				else {
-					obj.desc = description;
+					obj.Description = description;
 					verb = "updated";
 				}
 
 				reply = `The description of your alias "${name}" has been ${verb} successfully.`;
 				changed = true;
-				obj.lastEdit = new sb.Date().toJSON();
+				obj.Last_Edit = new sb.Date();
 
 				break;
 			}
@@ -333,27 +334,28 @@ module.exports = {
 						reply: `To duplicate an alias, you must provide both existing and new alias names!`
 					};
 				}
-				else if (!wrapper.has(oldAlias)) {
+				else if (!helpers.hasAlias(context.user, oldAlias)) {
 					return {
 						success: false,
 						reply: `You don't have the "${oldAlias}" alias!`
 					};
 				}
-				else if (wrapper.has(newAlias)) {
+				else if (helpers.hasAlias(context.user, newAlias)) {
 					return {
 						success: false,
 						reply: `You already have the "${newAlias}" alias!`
 					};
 				}
-
-				const previous = wrapper.get(oldAlias);
+				/** @type {Alias} */
+				const previous = helpers.getAlias(context.user, oldAlias);
 				wrapper.set(newAlias, {
-					name: newAlias,
-					invocation: previous.invocation,
-					args: previous.args,
-					desc: previous.desc ?? "",
-					created: new sb.Date().toJSON(),
-					lastEdit: null
+					Name: newAlias,
+					Invocation: previous.Invocation,
+					Args: previous.Args,
+					Description: previous.Description ?? "",
+					Created: new sb.Date(),
+					Last_Edit: null,
+					Copy_Of: previous.ID
 				});
 
 				reply = `Successfully duplicated "${oldAlias}" as "${newAlias}"!`;
@@ -369,7 +371,7 @@ module.exports = {
 						reply: `No alias or command name provided!"`
 					};
 				}
-				else if (!wrapper.has(name)) {
+				else if (!helpers.hasAlias(context.user, name)) {
 					return {
 						success: false,
 						reply: `You don't have the "${name}" alias!`
@@ -383,11 +385,11 @@ module.exports = {
 						reply: `Cannot edit alias! The command "${command}" does not exist.`
 					};
 				}
-	
-				const obj = wrapper.get(name);
-				obj.invocation = command;
-				obj.args = rest;
-				obj.lastEdit = new sb.Date().toJSON();
+				/** @type {Alias} */
+				const obj = helpers.getAlias(context.user, name);
+				obj.Invocation = command;
+				obj.Args = rest;
+				obj.Last_Edit = new sb.Date();
 	
 				changed = true;
 				reply = `Your alias "${name}" has been successfully edited.`;
@@ -464,7 +466,7 @@ module.exports = {
 						reply: `No alias name provided!`
 					};
 				}
-				else if (!wrapper.has(name)) {
+				else if (!helpers.hasAlias(context.user, name)) {
 					return {
 						success: false,
 						reply: `You don't have the "${name}" alias!`
@@ -486,7 +488,7 @@ module.exports = {
 						reply: "You must provide both the current alias name and the new one!"
 					};
 				}
-				else if (!wrapper.has(oldName)) {
+				else if (!helpers.hasAlias(context.user, oldName)) {
 					return {
 						success: false,
 						reply: `You don't have the "${oldName}" alias!`
@@ -494,10 +496,12 @@ module.exports = {
 				}
 	
 				changed = true;
-				wrapper.set(newName, wrapper.get(oldName));
-				wrapper.get(newName).lastEdit = new sb.Date().toJSON();
-				wrapper.get(newName).name = newName;
-				wrapper.delete(oldName);
+				/** @type {Alias} */
+				let newAlias = helpers.getAlias(context.user, oldName)
+				newAlias.Name = newName
+				newAlias.Last_Edit = new sb.Date();
+				helpers.deleteAlias(context.user, oldName);
+				helpers.setAlias(context.user, newName)
 	
 				reply = `Your alias "${oldName}" has been succesfully renamed to "${newName}".`;
 	
@@ -512,24 +516,24 @@ module.exports = {
 						reply: "No alias name provided!"
 					};
 				}
-				else if (!wrapper.has(name)) {
+				else if (!helpers.hasAlias(context.user, name)) {
 					return {
 						success: false,
 						reply: `You don't have the "${name}" alias!`
 					};
 				}
 	
-				const { invocation, args: aliasArguments } = wrapper.get(name);
+				const { Invocation, Args: aliasArguments } = helpers.getAlias(context.user, name);
 				const { success, reply, resultArguments } = this.staticData.applyParameters(context, aliasArguments, args.slice(1));
 				if (!success) {
 					return { success, reply };
 				}
 	
-				const commandData = sb.Command.get(invocation);
+				const commandData = sb.Command.get(Invocation);
 				if (context.append.pipe && !commandData.Flags.pipe) {
 					return {
 						success: false,
-						reply: `Cannot use command ${invocation} inside of a pipe, despite being wrapped in an alias!`
+						reply: `Cannot use command ${Invocation} inside of a pipe, despite being wrapped in an alias!`
 					};
 				}
 	
@@ -546,7 +550,7 @@ module.exports = {
 				}
 	
 				const result = await sb.Command.checkAndExecute(
-					invocation,
+					Invocation,
 					resultArguments,
 					context.channel,
 					context.user,
