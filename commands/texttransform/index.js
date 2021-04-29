@@ -371,7 +371,7 @@ module.exports = {
 			},
 			reply: result,
 			cooldown: {
-				length: (context.append.pipe) ? null : this.Cooldown
+				length: (context.append?.pipe) ? null : this.Cooldown
 			}
 		};
 	}),
