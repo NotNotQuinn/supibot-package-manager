@@ -3,7 +3,7 @@ module.exports = {
 	Aliases: null,
 	Author: "supinic",
 	Cooldown: 10000,
-	Description: "Posts the channels supibot is currently subscribed to on Twitch, along with a sample sub emote to each.",
+	Description: "Posts the channels wanductbot is currently subscribed to on Twitch, along with a sample sub emote to each.",
 	Flags: ["use-params"],
 	Params: [
 		{ name: "channelsOnly", type: "boolean" },
@@ -50,11 +50,11 @@ module.exports = {
 			};
 		}
 
-		let message = `Supibot is currently subscribed to: ${channels} - ${emotes}`;
+		let message = `Wanductbot is currently subscribed to: ${channels} - ${emotes}`;
 		const limit = context.channel?.Message_Limit ?? context.platform.Message_Limit;
 
 		if (message.length > limit) {
-			message = `Supibot is currently subscribed to ${result.length} channels: ${emotes}`;
+			message = `Wanductbot is currently subscribed to ${result.length} channels: ${emotes}`;
 		}
 
 		return {
