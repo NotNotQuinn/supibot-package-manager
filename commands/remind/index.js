@@ -12,6 +12,7 @@ module.exports = {
 	],
 	Whitelist_Response: null,
 	Static_Data: (() => ({
+		limit: 2000,
 		strings: {
 			"scheduled-incoming": "That person has too many timed reminders pending for them on that day!",
 			"public-incoming": "That person has too many public reminders pending!",
@@ -227,13 +228,17 @@ module.exports = {
 				};
 			}
 		}
-	
+
+		const message = (reminderText)
+			? sb.Utils.wrapString(reminderText, this.staticData.limit)
+			: "(no message)";
+
 		const result = await sb.Reminder.create({
 			Channel: context?.channel?.ID ?? null,
 			Platform: context.platform.ID,
 			User_From: context.user.ID,
 			User_To: targetUser.ID,
-			Text: reminderText || "(no message)",
+			Text: message,
 			Schedule: targetReminderDate ?? null,
 			Created: new sb.Date(),
 			Private_Message: isPrivate

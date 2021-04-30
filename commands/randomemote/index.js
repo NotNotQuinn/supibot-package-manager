@@ -11,6 +11,7 @@ module.exports = {
 		{ name: "ffz", type: "boolean" },
 		{ name: "global", type: "boolean" },
 		{ name: "repeat", type: "boolean" },
+		{ name: "regex", type: "regex" },
 		{ name: "sub", type: "boolean" },
 		{ name: "twitch", type: "boolean" },
 	],
@@ -53,6 +54,9 @@ module.exports = {
 				return false;
 			}
 			if (twitch === true && i.type !== "twitch-global" || bttv === false && i.type === "twitch-global") {
+				return false;
+			}
+			if (context.params.regex && !context.params.regex.test(i.name)) {
 				return false;
 			}
 
@@ -99,6 +103,12 @@ module.exports = {
 			`<code>${prefix}rem</code>`,
 			`<code>${prefix}randomemote</code>`,
 			"Posts any emote.",
+			"",
+
+			`<code>${prefix}rem regex:(regular expression)</code>`,
+			`<code>${prefix}rem regex:pepe</code>`,
+			`<code>${prefix}rem regex:/^paja[HW]/</code>`,
+			"Filters emotes by a provided regular expression. You can also just use plain text to filter as \"contains\".",
 			"",
 
 			`<code>${prefix}rem repeat:false</code>`,

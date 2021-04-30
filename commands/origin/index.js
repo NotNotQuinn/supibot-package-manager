@@ -21,6 +21,7 @@ module.exports = {
 			.select("ID", "Text", "Tier", "Type", "Todo", "Emote_Added", "Author")
 			.from("data", "Origin")
 			.where("Name COLLATE utf8mb4_bin LIKE %s", emote)
+			.where("Replaced = %b", false)
 		);
 
 		const customIndex = context.params.index ?? null;
@@ -56,13 +57,15 @@ module.exports = {
 				addedString = `Added on ${data.Emote_Added.format("Y-m-d")}.`;
 			}
 
+			const text = data.Text.replace(/\[(.+?)]\(\d+\)/g, "$1");
 			const link = `https://supinic.com/data/origin/detail/${data.ID}`;
 			const type = (data.Tier) ? `T${data.Tier}` : "";
+
 			return {
 				reply: sb.Utils.tag.trim `
 					${link}					
 					${type} ${data.Type} emote:
-					${data.Text}
+					${text}
 					${addedString}
 					${authorString}
 				`
