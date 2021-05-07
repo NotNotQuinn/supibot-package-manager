@@ -4,7 +4,8 @@ module.exports = {
 	Description: "This module notifies QuinnDT whenever he is mentioned (in any channel, across platforms) via Twitch whispers.",
 	Code: (async function pingQuinn (context) {
 		const { message, channel, user } = context;
-		const regex = /(!?quinnd3|quintPls)q+u+[i1l\|]+nn+/i;
+		// yes, this is my actual ping.
+		const regex = /(?!quinnd3.|quintPls|harley quinn)((q)(\s*)?)+((u)(\s*)?)+((i|1|!|\\|\/|\||l)(\s*)?)+((n)(\s*)?)+/i;
 	
 		if (typeof this.data.timeout === "undefined") {
 			this.data.timeout = 0;
