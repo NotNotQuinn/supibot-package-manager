@@ -61,7 +61,7 @@ module.exports = {
 						success: false,
 						reply: ((!context.channel || context.channel.Links_Allowed)
 						? `Commands information here: ${allCommandsPasteLink} Not refreshed (❗)`
-						: `4Head .. Not refreshed (❗)`)
+						: `4Head almost the exact same as supibot.`)
 					}
 				}
 				allCommandsPasteLink = result;
@@ -70,7 +70,7 @@ module.exports = {
 		return {
 			reply: (!context.channel || context.channel.Links_Allowed)
 				? `Commands information here: ${allCommandsPasteLink}`
-				: `4Head ..`
+				: `4Head almost the exact same as supibot.`
 		};
 	}
 		// No specified command - print all available commands in given channel for given user
