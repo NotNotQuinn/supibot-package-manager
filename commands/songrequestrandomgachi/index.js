@@ -13,11 +13,21 @@ module.exports = {
 		repeatLimit: 5
 	})),
 	Code: (async function songRequestRandomGachi (context, ...args) {
+		const sr = sb.Command.get("songrequest");
+		let hasSongRequestsAvailable = false;
+		if (sr && sr.Flags.whitelist && context.channel) {
+			const filters = sb.Filter.getLocals("Whitelist", {
+				channel: context.channel,
+				command: sr
+			});
+
+			hasSongRequestsAvailable = (filters.length > 0);
+		}
+
 		let link = null;
 		let counter = 0;
 		const rg = sb.Command.get("rg");
-		const passedContext = sb.Command.createFakeContext(rg, {
-			...context,
+		const passedContext = sb.Command.createFakeContext(rg, context, {
 			params: {
 				...context.params,
 				linkOnly: true
@@ -49,12 +59,18 @@ module.exports = {
 		if (counter >= this.staticData.repeatLimit) {
 			return {
 				success: false,
-				reply: `Video fetching failed ${this.staticData.repeatLimit} times! Aborting request...`
+				reply: `Video fetching failed ${this.staticData.repeatLimit} times! Aborting...`
 			};
 		}
-	
-		return {
-			reply: `!sr ${link}`
+
+		if (hasSongRequestsAvailable) {
+			const srContext = sb.Command.createFakeContext(sr, context, { params: {} });
+			return await sr.execute(srContext, link);
+		}
+		else {
+			return {
+				reply: `!sr ${link}`
+			};
 		}
 	}),
 	Dynamic_Description: null

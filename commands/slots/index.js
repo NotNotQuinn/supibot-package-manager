@@ -4,13 +4,15 @@ module.exports = {
 	Author: "supinic",
 	Cooldown: 20000,
 	Description: "Once at least three unique emotes (or words) have been provided, rolls a pseudo slot machine to see if you get a flush.",
-	Flags: ["mention","pipe"],
-	Params: null,
+	Flags: ["mention","pipe","use-params"],
+	Params: [
+		{ name: "pattern", type: "string" }
+	],
 	Whitelist_Response: null,
 	Static_Data: (() => ({
 		patterns: [
 			{
-				name: "#nam",
+				name: "nam",
 				pattern: [
 					"aniki", "black", "bridge", "bruceu", "champ", "cheat", "cock", "cringe", "cum", "dab",
 					"doc", "emote", "forsen", "fuck", "gay", "incest", "is", "it", "like", "lol",
@@ -21,16 +23,15 @@ module.exports = {
 				notes: "Used mainly in nymn's chat for random shit. Contains a selection of words."
 			},
 			{
-				name: "#gachi",
-				pattern: [
-					"gachiCOOL", "gachiJAM", "gachiHop", "gachiANGEL", "gachiBOP",
-					"gachiBASS", "gachiHYPER", "GachiPls", "gachiVICTORY", "gachiOnFIRE",
-					"gachiGold", "gachiPRIDE"
-				],
-				notes: "Contains most gachi emotes. Based on pajlada's selection in his channel."
+				name: "gachi",
+				pattern: (context, emotes) => {
+					const regex = /^[gG]achi/;
+					return emotes.filter(i => regex.test(i.name)).map(i => i.name);
+				},
+				notes: "Selects all gachimuchi-related emotes."
 			},
 			{
-				name: "#blob",
+				name: "blob",
 				pattern: [
 					"a", "about", "anyway", "away", "bad", "be", "blob", "breakfast", "cook", "cow",
 					"do", "dont", "ever", "for", "fuckin", "fucking", "get", "hire", "in", "it",
@@ -41,106 +42,32 @@ module.exports = {
 				notes: "Contains quotes related to Anthony \"Obama Chavez\" Stone. pajaWTH"
 			},
 			{
-				name: "#twitch",
-				pattern: () => {
-					const { controller } = sb.Platform.get("twitch");
-					if ((controller?.availableEmotes ?? []).length === 0) {
-						return "Twitch messed up, no emotes available...";
-					}
-	
-					return controller.availableEmotes
-						.filter(emoteSet => emoteSet.tier === null)
-						.flatMap(emoteSet => emoteSet.emotes.map(emote => emote.token));
-				},
+				name: "twitch",
+				pattern: (context, emotes) => emotes.filter(i => i.type === "twitch-global").map(i => i.name),
 				notes: "All Twitch global emotes."
 			},
 			{
-				name: "#sub",
-				pattern: () => {
-					const { controller } = sb.Platform.get("twitch");
-					if ((controller?.availableEmotes ?? []).length === 0) {
-						return "Twitch messed up, no emotes available...";
-					}
-	
-					return controller.availableEmotes
-						.filter(emoteSet => ["1", "2", "3"].includes(emoteSet.tier))
-						.flatMap(emoteSet => emoteSet.emotes.map(emote => emote.token));
-				},
-				notes: "Rolls random emotes from supibot's current subscriber emote list."
+				name: "sub",
+				pattern: (context, emotes) => emotes.filter(i => i.type === "twitch-subscriber").map(i => i.name),
+				notes: "Rolls random emotes from Supibot's current subscriber emote list."
 			},
 			{
-				name: "#bttv",
-				pattern: (async function slotsPattern_bttv (context) {
-					const data = await sb.Got({
-						throwHttpErrors: false,
-						url: "https://api.betterttv.net/2/channels/" + context.channel.Name
-					}).json();
-	
-					if (data.status === 404 || !data.emotes || data.emotes.length === 0) {
-						return "Well, yeah, but BTTV is like a 3rd party thing, and I don't know...";
-					}
-	
-					return data.emotes.map(i => i.code);
-				}),
+				name: "bttv",
+				pattern: (context, emotes) => emotes.filter(i => i.type === "bttv").map(i => i.name),
 				notes: "Rolls from BTTV emotes in the current channel."
 			},
 			{
-				name: "#ffz",
-				pattern: (async function slotsPattern_ffz (context) {
-					const { statusCode, body: data } = await sb.Got({
-						responseType: "json",
-						throwHttpErrors: false,
-						url: "https://api.frankerfacez.com/v1/room/" + context.channel.Name
-					});
-	
-					if (statusCode === 404) {
-						return { reply: "This channel doesn't exist within FFZ database!" };
-					}
-					else if (!data.sets) {
-						return { reply: "No FFZ emotes found!" };
-					}
-	
-					const set = Object.keys(data.sets)[0];
-					if (data.sets[set].emoticons.length === 0) {
-						return { reply: "This channel has no FFZ emotes enabled." };
-					}
-	
-					return data.sets[set].emoticons.map(i => i.name);
-				}),
+				name: "ffz",
+				pattern: (context, emotes) => emotes.filter(i => i.type === "ffz").map(i => i.name),
 				notes: "Rolls from FFZ emotes in the current channel."
 			},
 			{
-				name: "#pepe",
-				pattern: (async function slotsPattern_pepe (context) {
-					const fullEmotesList = (await Promise.all([
-						(async () => {
-							const raw = await sb.Got("https://api.betterttv.net/2/channels/" + context.channel.Name).json();
-							if (raw.status === 404 || raw.emotes.length === 0) {
-								return [];
-							}
-	
-							return raw.emotes.map(i => i.code);
-						})(),
-						(async () => {
-							const raw = await sb.Got("https://api.frankerfacez.com/v1/room/" + context.channel.Name).json();
-							const set = Object.keys(raw.sets)[0];
-							if (raw.sets[set].emoticons.length === 0) {
-								return [];
-							}
-	
-							return raw.sets[set].emoticons.map(i => i.name);
-						})()
-					])).flat();
-	
-					const filtered = fullEmotesList.filter(i => i.toLowerCase().includes("pepe"));
-					return (filtered.length >= 3)
-						? filtered
-						: "Not enough pepe- emotes are active in this channel supiniL";
-				}),
-				notes: "Rolls from all emotes in the current channel that contain the string \"pepe"
+				name: "pepe",
+				pattern: (context, emotes) => emotes.filter(i => i.name.toLowerCase().startsWith("pepe")).map(i => i.name),
+				notes: "Rolls from all Pepe-related emotes in the current channel."
 			},
 			{
-				name: "#lotto",
+				name: "lotto",
 				pattern: () => ({
 					emotes: Array(69).fill(0).map((i, ind) => String(ind)),
 					limit: 5
@@ -148,11 +75,14 @@ module.exports = {
 				notes: "Rolls something akin to a Lotto lottery - 5 numbers, 1 to 69 each."
 			},
 			{
-				name: "#numbers",
+				name: "numbers",
 				pattern: (extra, type, number) => {
 					const target = Number(number);
 					if (!target || target > Number.MAX_SAFE_INTEGER || target < 1 || Math.trunc(target) !== target) {
-						return "The number must be an integer between 2 and " + Number.MAX_SAFE_INTEGER;
+						return {
+							success: false,
+							reply: "The number must be an integer between 2 and " + Number.MAX_SAFE_INTEGER
+						};
 					}
 	
 					return {
@@ -163,7 +93,7 @@ module.exports = {
 				notes: "Rolls 3 numbers, from 1 to the given maximum. Must not exceed the maximum integer value, which is 9007199254740991."
 			},
 			{
-				name: "#jebaited",
+				name: "jebaited",
 				pattern: [
 					"You", "lost", "lol"
 				], "Type": "Array", notes: "Jebaited"
@@ -177,26 +107,38 @@ module.exports = {
 				cooldown: 5000
 			};
 		}
-	
-		const check = this.staticData.patterns.find(i => i.name === emotes[0]);
+
+		if (!context.channel) {
+			return {
+				success: false,
+				reply: `This command cannot be used in private messages!`
+			};
+		}
+
 		let limit = 3;
 		let type = "array";
 		let uniqueItems = null;
 		const rolledItems = [];
-	
-		if (check) {
-			if (Array.isArray(check.pattern)) {
-				emotes = check.pattern;
+
+		let deprecationWarning = "";
+		let patternName = context.params.pattern ?? emotes[0] ?? "";
+		if (patternName.startsWith("#")) {
+			patternName = patternName.slice(1);
+			deprecationWarning = `Patterns with # are deprecated, use pattern:${patternName} instead.`;
+		}
+
+		const preset = this.staticData.patterns.find(i => i.name === patternName );
+		if (preset) {
+			if (Array.isArray(preset.pattern)) {
+				emotes = preset.pattern;
 			}
-			else if (typeof check.pattern === "function") {
-				const result = await check.pattern(context, ...emotes);
-	
-				if (typeof result === "string") {
-					// This basically means something went wrong somehow (like no emotes found in that channel)
-					// Reply with that response instead of rolling for emotes.
+			else if (typeof preset.pattern === "function") {
+				const channelEmotes = await context.channel.fetchEmotes();
+				const result = await preset.pattern(context, channelEmotes);
+				if (result.success === false) {
 					return {
-						success: false,
-						reply: result
+						...result,
+						cooldown: result.cooldown ?? 2500
 					};
 				}
 				else if (Array.isArray(result)) {
@@ -224,7 +166,7 @@ module.exports = {
 			if (emotes.length < limit) {
 				return {
 					reply: "You must provide at least " + limit + " emotes/words to roll the slots!",
-					cooldown: this.Cooldown / 2
+					cooldown: 2500
 				};
 			}
 	
@@ -237,8 +179,14 @@ module.exports = {
 	
 		if (rolledItems.every(i => rolledItems[0] === i)) {
 			if (uniqueItems === 1) {
+				const dankEmote = await context.getBestAvailableEmote(["FeelsDankMan", "FeelsDonkMan"], "🤡");
 				return {
-					reply: `[ ${rolledItems.join(" ")} ] -- FeelsDankMan You won and beat the odds of 100%.`
+					reply: sb.Utils.tag.trim `
+						[ ${rolledItems.join(" ")} ] 
+						${dankEmote} 
+						You won and beat the odds of 100%.
+						${deprecationWarning}
+					`
 				};
 			}
 	
@@ -262,15 +210,27 @@ module.exports = {
 				Channel: context.channel?.ID ?? null,
 				Odds: reverseChance
 			});
-	
-			await row.save();
+
+			// Discard the row save result - not needed anywhere
+			const [, pogEmote] = await Promise.all([
+				row.save(),
+				context.getBestAvailableEmote(["PagChomp", "Pog", "PogChamp"], "🎉")
+			]);
+
 			return {
-				reply: `[ ${rolledItems.join(" ")} ] -- PagChomp A flush! Congratulations, you beat the odds of ${sb.Utils.round(chance * 100, 3)}% (that is 1 in ${reverseChance})`
+				reply: sb.Utils.tag.trim `
+					[ ${rolledItems.join(" ")} ] 
+					${pogEmote} A flush! 
+					Congratulations, you beat the odds of
+					${sb.Utils.round(chance * 100, 3)}%
+					(that is 1 in ${reverseChance})
+					${deprecationWarning}
+				`
 			};
 		}
 	
 		return {
-			reply: `[ ${rolledItems.join(" ")} ]`
+			reply: `[ ${rolledItems.join(" ")} ] ${deprecationWarning}`
 		};
 	}),
 	Dynamic_Description: (async (prefix, values) => {
@@ -289,8 +249,8 @@ module.exports = {
 			"Three rolls will be chose randomly. Get the same one three times for a win.",
 			"",
 	
-			`<code>${prefix}slots #(pattern)</code>`,
-			"Uses a pre-determined or dynamic pattern as your list of words.",
+			`<code>${prefix}slots pattern:(pattern name)</code>`,
+			"Uses a pre-determined or dynamic pattern as your list of words. See below.",
 			"",
 	
 			"Supported patterns:",

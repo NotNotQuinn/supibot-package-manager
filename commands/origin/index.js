@@ -16,12 +16,15 @@ module.exports = {
 				reply: "Check the emote origin list here: https://supinic.com/data/origin/list"
 			};
 		}
-	
+
+		const contextEmote = await context.getBestAvailableEmote([emote], null, { returnEmoteObject: true });
+		const contextEmoteID = (contextEmote?.id) ? String(contextEmote.id) : "";
 		const emoteData = await sb.Query.getRecordset(rs => rs
-			.select("ID", "Text", "Tier", "Type", "Todo", "Emote_Added", "Author")
+			.select("ID", "Emote_ID", "Text", "Tier", "Type", "Todo", "Emote_Added", "Author")
 			.from("data", "Origin")
 			.where("Name COLLATE utf8mb4_bin LIKE %s", emote)
 			.where("Replaced = %b", false)
+			.orderBy(`CASE WHEN Emote_ID = '${sb.Query.escapeString(contextEmoteID)}' THEN -1 ELSE 1 END`)
 		);
 
 		const customIndex = context.params.index ?? null;
@@ -31,14 +34,20 @@ module.exports = {
 				reply: "No definition found for given emote!"
 			};
 		}
-		else if (emoteData.length > 1 && customIndex === null) {
+
+		// Attempt to use the emote available in current channel (context) first, if no index is provided
+		const implicitEmote = emoteData.find(i => i.Emote_ID === contextEmoteID);
+		if (emoteData.length > 1 && customIndex === null && !implicitEmote) {
 			return {
 				reply: `Multiple emotes found for this name! Use "index:0" through "index:${emoteData.length - 1}" to access each one.`,
 				cooldown: { length: 2500 }
 			};
 		}
-	
-		const data = emoteData[customIndex ?? 0];
+
+		const data = (emoteData.length > 1 && customIndex === null)
+			? implicitEmote
+			: emoteData[customIndex ?? 0];
+
 		if (!data) {
 			return {
 				success: false,
@@ -46,6 +55,11 @@ module.exports = {
 			};
 		}
 		else {
+			let extras = "";
+			if (emoteData.length > 1 && customIndex === null) {
+				extras = `(${emoteData.length - 1} extras) `;
+			}
+
 			let authorString = "";
 			if (data.Author) {
 				const authorUserData = await sb.User.get(data.Author);
@@ -63,6 +77,7 @@ module.exports = {
 
 			return {
 				reply: sb.Utils.tag.trim `
+					${extras}
 					${link}					
 					${type} ${data.Type} emote:
 					${text}

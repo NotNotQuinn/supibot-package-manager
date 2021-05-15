@@ -18,7 +18,8 @@ module.exports = {
 			Description: "Regularly updates the available words in $markov.",
 			Expression: "0 * * * * *",
 			Code: (async function markovUpdater () {
-				if (!sb.ChatModule) {
+				// early return - avoid errors during modules loading
+				if (!sb.ChatModule || !sb.Channel) {
 					return;
 				}
 
@@ -183,7 +184,7 @@ module.exports = {
 		});
 
 		return {
-			reply: string
+			reply: `🔮 ${string}`
 		};
 
 	}),

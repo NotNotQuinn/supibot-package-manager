@@ -1,6 +1,6 @@
 module.exports = {
 	Name: "dankdebug",
-	Aliases: null,
+	Aliases: ["js"],
 	Author: "supinic",
 	Cooldown: 10000,
 	Description: "Debug command for public use, which means it's quite limited because of security.",
@@ -45,12 +45,17 @@ module.exports = {
 
 		let result;
 		let script;
+		const string = args.join(" ");
+
 		if (context.params.function) {
 			script = context.params.function;
 			scriptArgs = args;
 		}
+		else if (!string.includes("return")) {
+			script = string;
+		}
 		else {
-			script = `(() => {\n${args.join(" ")}\n})()`;			
+			script = `(() => {\n${string}\n})()`;
 		}
 		
 		try {
