@@ -6,8 +6,9 @@ module.exports = {
 	Description: "Pipes the result of one command to another, and so forth. Each command will be used as if used separately, so each will be checked for cooldowns and banphrases. Use the character \"|\" or \">\" to separate each command.",
 	Flags: ["mention","pipe","use-params"],
 	Params: [
+		{ name: "_apos", type: "object" },
+		{ name: "_force", type: "boolean" },
 		{ name: "_pos", type: "number" },
-		{ name: "_apos", type: "object" }
 	],
 	Whitelist_Response: null,
 	Static_Data: (() => ({
@@ -21,13 +22,13 @@ module.exports = {
 				reply: "At least two commands must be piped together!"
 			};
 		}
-	
+
 		let hasExternalInput = false;
 		const nullCommand = sb.Command.get("null");
 		for (let i = 0; i < invocations.length; i++) {
 			const [commandString] = invocations[i].split(" ");
 			const command = sb.Command.get(commandString.replace(sb.Command.prefixRegex, ""));
-	
+
 			if (!command) {
 				return {
 					success: false,
@@ -54,7 +55,7 @@ module.exports = {
 				hasExternalInput = true;
 			}
 		}
-	
+
 		const resultsInPastebin = args[args.length - 1] === "pastebin";
 		let finalResult = null;
 		let currentArgs = [];
@@ -64,16 +65,28 @@ module.exports = {
 			const inv = invocations[i];
 			const [cmd, ...restArgs] = inv.split(" ");
 
-			const argumentStartPosition = Number(context.params._pos ?? context.params._apos?.[i] ?? 0);
-			if (!sb.Utils.isValidInteger(argumentStartPosition)) {
+			let argumentStartPosition = null;
+			if (typeof context.params._apos?.[i] !== "undefined") {
+				argumentStartPosition = Number(context.params._apos?.[i]);
+			}
+			else if (typeof context.params._pos !== "undefined") {
+				argumentStartPosition = Number(context.params._pos);
+			}
+
+			if (argumentStartPosition !== null && !sb.Utils.isValidInteger(argumentStartPosition)) {
 				return {
 					success: false,
 					reply: "Invalid argument position provided!"
 				};
 			}
 
-			const cmdArgs = [...currentArgs];
-			cmdArgs.splice(argumentStartPosition, 0, ...restArgs);
+			const cmdArgs = [...restArgs];
+			if (argumentStartPosition === null) {
+				cmdArgs.push(...currentArgs);
+			}
+			else {
+				cmdArgs.splice(argumentStartPosition, 0, ...currentArgs);
+			}
 
 			const result = await sb.Command.checkAndExecute(
 				cmd,
@@ -91,7 +104,7 @@ module.exports = {
 					partialExecute: true
 				}
 			);
-	
+
 			if (!result) { // Banphrase result: Do not reply
 				currentArgs = [];
 			}
@@ -113,23 +126,28 @@ module.exports = {
 				};
 			}
 			else if (result.success === false) { // Command result: Failed (cooldown, no command, ...)
-				let reply = "";
-				switch (result.reason) {
-					case "no-command": reply = "Not a command!"; break;
-					case "pending": reply = "Another command still being executed!"; break;
-					case "cooldown": reply = "Still on cooldown!"; break;
-					case "filter": reply = "You can't use this command here!"; break;
-					case "block": reply = "That user has blocked you from this command!"; break;
-					case "opt-out": reply = "That user has opted out from this command!"; break;
-					case "pipe-nsfw": reply = "You cannot pipe NSFW results!"; break;
-	
-					default: reply = result.reply ?? result.reason;
+				if (context.params._force) {
+					currentArgs = sb.Utils.wrapString(result.reply, this.staticData.resultCharacterLimit).split(" ");
 				}
-	
-				return {
-					success: false,
-					reply: `Pipe command ${cmd} failed: ${reply}`
-				};
+				else {
+					let reply = "";
+					switch (result.reason) {
+						case "no-command": reply = "Not a command!"; break;
+						case "pending": reply = "Another command still being executed!"; break;
+						case "cooldown": reply = "Still on cooldown!"; break;
+						case "filter": reply = "You can't use this command here!"; break;
+						case "block": reply = "That user has blocked you from this command!"; break;
+						case "opt-out": reply = "That user has opted out from this command!"; break;
+						case "pipe-nsfw": reply = "You cannot pipe NSFW results!"; break;
+
+						default: reply = result.reply ?? result.reason;
+					}
+
+					return {
+						success: false,
+						reply: `Pipe command ${cmd} failed: ${reply}`
+					};
+				}
 			}
 			else if (!result.reply) {
 				return {
@@ -160,14 +178,37 @@ module.exports = {
 			"Pipes multiple commands together, where each command's result will become the input of another.",
 			"Separate the commands with <code>|</code> or <code>&gt;</code> characters.",
 			"",
-			
+
 			`<code>${prefix}pipe news RU | translate</code>`,
 			"Fetches russian news, and immediately translates them to English (by default).",
 			"",
-	
+
 			`<code>${prefix}pipe 4Head | translate to:german | notify (user)</code>`,
 			"Fetches a random joke, translates it to German, and reminds the target user with the text.",
-			""		
+			"",
+
+			"<h5>Advanced pipe parameters</h5>",
+			"",
+
+			`<code>${prefix}pipe _apos:(index) (...)</code>`,
+			"When the <code>_apos</code> parameter is used, every command in the pipe will have its result added to that index.",
+			"",
+
+			"Example 1:",
+			"<code>$pipe _pos:2 shuffle a b c | tt fancy 1 2 3</code> => <code>1 2 𝓫 𝓪 𝓬 3</code>",
+			"the <code>a, b, c</code> parameters are added to <code>tt fancy</code> at position 2, so it becomes <code>tt fancy 1 a b c 2 3</code>",
+			"",
+
+			"Example 2:",
+			"<code>$pipe _apos:0=2 _apos:1=3 shuffle a b c | tt fancy A B C | tt fancy 1 2 3</code> => <code>1 2 3 𝓐 𝓑 𝓬 𝓪 𝓫 𝓒 </code>",
+			"Similar to <code>_pos</code>, but _apos specifies the start position for each command.",
+			" <code>_apos:0=3</code> => Command #0 uses start position 3.",
+			"Reverts to the end of the command if invalid value is provided.",
+			"",
+
+			`<code>${prefix}pipe _force:true translate to:made-up-language foobar | remind (user)</code>`,
+			"If used with <code>_force:true</code>, this invocation will actually pipe the failure response of the <code>translate</code> command into <code>remind</code>.",
+			""
 		];
 	})
 };

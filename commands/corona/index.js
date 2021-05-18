@@ -66,6 +66,7 @@ module.exports = {
 					.orderBy("Status.Date DESC")
 				),
 				countryData: (region, country, direct = false) => sb.Query.getRecordset(rs => rs
+					.select("Place.ID AS Place_ID")
 					.select("Place.Name")
 					.select("Place.Parent")
 					.select("All_Cases")
@@ -283,40 +284,24 @@ module.exports = {
 		}
 
 		let vaccines = "";
-		if (country) {
-			let vaccineData = await this.getCacheData("vaccines");
-			if (!vaccineData) {
-				const rawData = await sb.Got({
-					url: "https://covid.ourworldindata.org/data/owid-covid-data.json"
-				}).json();
+		if (targetData && targetData.Place_ID) {
+			const vaccineData = await sb.Query.getRecordset(rs => rs
+				.select("People_Fully")
+				.from("corona", "Vaccine_Status")
+				.where("Place = %n", targetData.Place_ID)
+				.orderBy("Date DESC")
+				.limit(1)
+				.single()
+			);
 
-				vaccineData = Object.values(rawData).map(country => {
-					const hasVaccines = country.data.filter(i => i.people_fully_vaccinated);
-					const vaccines = (hasVaccines.length === 0)
-						? null
-						: Math.max(...hasVaccines.map(i => i.people_fully_vaccinated));
+			if (vaccineData) {
+				const fullyVaccinated = vaccineData.People_Fully;
+				const percent = sb.Utils.round(fullyVaccinated / population * 100, 2);
 
-					return {
-						name: country.location.toLowerCase(),
-						amount: vaccines,
-						percent: (!vaccines)
-							? null
-							: (sb.Utils.round(vaccines / country.population * 100, 1) + "%")
-					};
-				});
-
-				await this.setCacheData("vaccines", vaccineData, { expiry: 864e5 });
-			}
-
-			const vacData = vaccineData.find(i => i.name === country.toLowerCase());
-			if (vacData && vacData.amount !== null) {
-				vaccines = sb.Utils.tag.trim `
-					Vaccine status:
-					${vacData?.amount ? sb.Utils.groupDigits(vacData.amount) : "unknown amount"}
-					people have been fully vaccinated so far,
-					which is
-					${vacData?.percent ?? "unknown percent"} 
-					of the population.
+				vaccines = sb.Utils.tag.trim`
+					Vaccine status: 
+					${group(fullyVaccinated)} people have been fully vaccinated so far,
+					which is ${percent}% of the population.
 				`;
 			}
 		}

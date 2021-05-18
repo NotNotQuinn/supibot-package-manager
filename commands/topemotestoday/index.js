@@ -5,9 +5,7 @@ module.exports = {
 	Cooldown: 20000,
 	Description: "Posts the top 10 used emotes on Twitch for today, or a given day.",
 	Flags: ["mention","non-nullable"],
-	Params: [
-		{ name: "date", type: "string" }
-	],
+	Params: null,
 	Whitelist_Response: null,
 	Static_Data: (() => ({
 		fixMissingCode: (baseEmoteSet, ID) => {
@@ -15,20 +13,24 @@ module.exports = {
 			return emote?.token ?? null;
 		}
 	})),
-	Code: (async function topEmotesToday (context) {
-		const date = (context.params.date)
-			? new sb.Date(context.params.date)
-			: new sb.Date();
+	Code: (async function topEmotesToday (context, ...args) {
+		let date;
+		if (args.length > 0) {
+			const chronoData = sb.Utils.parseChrono(args.join(" "));
+			if (!chronoData) {
+				return {
+					success: false,
+					reply: `Could not parse your input!`
+				};
+			}
 
-		date.setTimezoneOffset(0);
-
-		if (!date) {
-			return {
-				success: false,
-				reply: "Invalid date provided!"
-			};
+			date = new sb.Date(chronoData.date);
+		}
+		else {
+			date = new sb.Date();
 		}
 
+		date.setTimezoneOffset(0);
 		const data = await sb.Got("GenericAPI", {
 			url: "https://internal-api.twitchemotes.com/api/stats/top/by-date",
 			searchParams: new sb.URLParams()
@@ -45,7 +47,7 @@ module.exports = {
 		}
 
 		const globalEmotes = sb.Platform.get("twitch").controller.availableEmotes.find(i => i.ID === "0");
-		const reply = data
+		const string = data
 			.sort((a, b) => b.count - a.count)
 			.map((i, ind) => {
 				const count = sb.Utils.groupDigits(i.count);
@@ -57,7 +59,9 @@ module.exports = {
 			})
 			.join("; ")
 
-		return { reply };
+		return {
+			reply: `Top 10 emotes for ${date.format("Y-m-d")}: ${string}`
+		};
 	}),
 	Dynamic_Description: (async (prefix) => {
 		return [
@@ -65,11 +69,14 @@ module.exports = {
 			"",
 
 			`<code>${prefix}tet</code>`,
-			"Fetches the top list for today",
+			"Fetches the top list for today.",
 			"",
 
-			`<code>${prefix}tet date:2021-01-01</code>`,
-			"Fetches the top list for the specified date.",
+			`<code>${prefix}tet today</code>`,
+			`<code>${prefix}tet yesterday</code>`,
+			`<code>${prefix}tet last week</code>`,
+			`<code>${prefix}tet 2021-01-01</code>`,
+			"Fetches the top list for the specified date. You can use natural language.",
 			"If your date format doesn't work, try YYYY-MM-DD instead, that should be fine."
 		];
 	})

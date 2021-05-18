@@ -3,7 +3,7 @@ module.exports = {
 	Aliases: null,
 	Author: "supinic",
 	Cooldown: 10000,
-	Description: "Fetches the current time and timezone for a given location",
+	Description: "Fetches the current time and timezone for a given location, or a user, if they have set their location.",
 	Flags: ["mention","non-nullable","pipe"],
 	Params: null,
 	Whitelist_Response: null,
@@ -83,8 +83,9 @@ module.exports = {
 				};
 			}
 			else if (targetUser.Name === context.platform.Self_Name) {
+				const robotEmote = await context.getBestAvailableEmote(["MrDestructoid"], "🤖");
 				return {
-					reply: `My current time is ${sb.Date.now()} 🤖`
+					reply: `My current time is ${sb.Date.now()} ${robotEmote}`
 				};
 			}
 			else if (!targetUser.Data.location) {
@@ -121,9 +122,10 @@ module.exports = {
 					};
 				}
 
+				const sadEmote = await context.getBestAvailableEmote(["peepoSadDank", "FeelsBadMan"], "😟");
 				return {
 					success: false,
-					reply: "That place was not found! FeelsBadMan"
+					reply: `That place was not found! ${sadEmote}`
 				};
 			}
 			else {
@@ -178,5 +180,23 @@ module.exports = {
 			};
 		}
 	}),
-	Dynamic_Description: null
+	Dynamic_Description: (async (prefix) => {
+		return [
+			"For a provided location, returns the current time, timezone and date it is observing.",
+			`Supports custom locations of users - this can be set with the <a href="/bot/command/207"><code>${prefix}set location</code></a> command.`,
+			"",
+
+			`<code>${prefix}time (location)</code>`,
+			"Shows the location's time data.",
+			"",
+
+			`<code>${prefix}time</code>`,
+			`If you have set your custom location with the <code>${prefix}set</code> command (see above), this command will return your location's time data.`,
+			"",
+
+			`<code>${prefix}time @(user)</code>`,
+			`Similar to your own custom location, but for a different user. Make sure to include the <code>@</code> symbol!`,
+			"",
+		]
+	})
 };
