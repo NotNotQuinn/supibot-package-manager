@@ -16,15 +16,15 @@ module.exports = {
 				reply: "This command cannot be used in private messages!"
 			};
 		}
-	
+
 		const channelName = context.channel.getDatabaseName();
 		const channelID = context.channel.ID;
 		let result = null;
-	
+
 		if (context.invocation === "rq") {
 			user = context.user.Name;
 		}
-	
+
 		if (user) {
 			const targetUser = await sb.User.get(user);
 			if (!targetUser) {
@@ -100,12 +100,12 @@ module.exports = {
 				.single()
 			);
 		}
-	
+
 		const partialReplies = [{
 			bancheck: true,
 			message: result.Text
 		}];
-	
+
 		// Only add the "(time ago) name:" part if it was not requested to skip it
 		if (!context.params.textOnly) {
 			partialReplies.unshift(
@@ -119,7 +119,7 @@ module.exports = {
 				}
 			);
 		}
-	
+
 		return {
 			partialReplies
 		};
@@ -128,21 +128,21 @@ module.exports = {
 		"Fetches a random chat line from the current channel.",
 		"If you specify a user, the line will be from that user only.",
 		"",
-	
+
 		`<code>${prefix}rl</code>`,
 		`Random message from anyone, in the format "(time ago) (username): (message)"`,
 		"",
-	
+
 		`<code>${prefix}rl (user)</code>`,
 		"Random message from specified user only",
 		"",
-	
+
 		`<code>${prefix}rq</code>`,
 		"Random message from yourself only",
 		"",
-	
+
 		`<code>${prefix}rl (user) textOnly:true</code>`,
 		`Will only reply with the message, ignoring the "(time ago) (name):" part`,
-		"",
+		""
 	])
 };

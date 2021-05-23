@@ -9,7 +9,9 @@ module.exports = {
 		{ name: "force", type: "boolean" }
 	],
 	Whitelist_Response: null,
-	Static_Data: null,
+	Static_Data: (() => ({
+		allowedGistTypes: ["text/plain", "application/javascript"]
+	})),
 	Code: (async function pastebin (context, command, ...rest) {
 		let type;
 		const args = [...rest];
@@ -77,7 +79,7 @@ module.exports = {
 				if (response.statusCode !== 200) {
 					return {
 						success: false,
-						reply: result.body.message
+						reply: response.body.message
 					};
 				}
 
@@ -88,22 +90,29 @@ module.exports = {
 						reply: `There are no files in this Gist!`
 					};
 				}
-				else if (Object.keys(files).length > 1) {
+
+				const { allowedGistTypes } = this.staticData;
+				const eligibleFiles = Object.values(files).filter(i => allowedGistTypes.includes(i.type));
+				if (eligibleFiles.length === 0) {
 					return {
 						success: false,
-						reply: `There are too many files in this Gist! This command only supports single-file Gists.`
+						reply: sb.Utils.tag.trim `
+							No eligible files found in this Gist!
+							Use exactly one file of one of these types: ${allowedGistTypes.join(", ")}
+						 `
+					};
+				}
+				else if (eligibleFiles.length > 1) {
+					return {
+						success: false,
+						reply: sb.Utils.tag.trim `
+							Too many eligible files found in this Gist!
+							Use exactly one file of one of these types: ${allowedGistTypes.join(", ")}
+						`
 					};
 				}
 
-				const [file] = Object.values(files);
-				if (file.type !== "text/plain" && file.type !== "application/javascript") {
-					return {
-						success: false,
-						reply: `Unsupported Gist file type "${file.type}"! This command only supports "text/plain" and "application/javascript".`
-					};
-				}
-
-				data = file.content;
+				data = eligibleFiles[0].content;
 				await this.setCacheData(ID, data, {
 					expiry: 30 * 864e5
 				});
@@ -165,32 +174,30 @@ module.exports = {
 			};
 		}
 	}),
-	Dynamic_Description: (async (prefix) => {
-		return [
-			"Gets a paste from Pastebin, or creates a new one with your text.",
-			"",
+	Dynamic_Description: (async (prefix) => [
+		"Gets a paste from Pastebin, or creates a new one with your text.",
+		"",
 
-			`<code>${prefix}pastebin get (link)</code>`,
-			`<code>${prefix}pbg (link)</code>`,
-			"For a specified link or a paste ID, fetches the contents of it.",
-			"The output must not be longer than 50 000 characters, for performance reasons. If it is, the paste won't be fetched.",
-			"",
+		`<code>${prefix}pastebin get (link)</code>`,
+		`<code>${prefix}pbg (link)</code>`,
+		"For a specified link or a paste ID, fetches the contents of it.",
+		"The output must not be longer than 50 000 characters, for performance reasons. If it is, the paste won't be fetched.",
+		"",
 
-			`<code>${prefix}gist (gist ID)</code>`,
-			"For a specified Gist ID, fetches its contents.",
-			"The Gist must only contain a single text/plain file.",
-			"The output must not be longer than 50 000 characters, for performance reasons. If it is, the Gist won't be fetched.",
-			"",
+		`<code>${prefix}gist (gist ID)</code>`,
+		"For a specified Gist ID, fetches its contents.",
+		"The Gist must only contain a single text/plain file.",
+		"The output must not be longer than 50 000 characters, for performance reasons. If it is, the Gist won't be fetched.",
+		"",
 
-			`<code>${prefix}pastebin post (...text)</code>`,
-			`<code>${prefix}pbp (...text)</code>`,
-			"Creates a new temporary paste for you to see.",
-			"The paste is set to only be available for 10 minutes from posting, then it is deleted.",
-			"",
+		`<code>${prefix}pastebin post (...text)</code>`,
+		`<code>${prefix}pbp (...text)</code>`,
+		"Creates a new temporary paste for you to see.",
+		"The paste is set to only be available for 10 minutes from posting, then it is deleted.",
+		"",
 
-			`<code>${prefix}pastebin get (link) force:true</code>`,
-			`<code>${prefix}pbg (link) force:true</code>`,
-			"Since the results of fetching pastes are cached, use force:true to forcibly fetch the current status of the paste."
-		];
-	})
+		`<code>${prefix}pastebin get (link) force:true</code>`,
+		`<code>${prefix}pbg (link) force:true</code>`,
+		"Since the results of fetching pastes are cached, use force:true to forcibly fetch the current status of the paste."
+	])
 };

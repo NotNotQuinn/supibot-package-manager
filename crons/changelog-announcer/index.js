@@ -27,8 +27,8 @@ module.exports = {
 		}
 
 		const subscriptions = await sb.Query.getRecordset(rs => rs
-		    .select("User_Alias", "Platform")
-		    .from("data", "Event_Subscription")
+			.select("User_Alias", "Platform")
+			.from("data", "Event_Subscription")
 			.where("Type = %s", "Changelog")
 			.where("Active = %b", true)
 		);
@@ -55,7 +55,7 @@ module.exports = {
 					link = relay.body.data.link;
 				}
 				else {
-					link = "Multiple IDs: " + data.map(i => i.ID).join(", ");
+					link = `Multiple IDs: ${data.map(i => i.ID).join(", ")}`;
 				}
 
 				message = `New changelog entries detected! Details: ${link}`;
@@ -71,7 +71,7 @@ module.exports = {
 					Created: new sb.Date(),
 					Private_Message: true,
 					Platform: sub.Platform ?? 1
-				}, true)
+				}, true);
 			}
 		}
 

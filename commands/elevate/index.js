@@ -9,18 +9,10 @@ module.exports = {
 	Whitelist_Response: null,
 	Static_Data: (() => ({
 		repositoryMap: {
-			"Backend": "supibot",
-			"Backend - bot": "supibot",
-			"Backend - modules": "supi-core",
-			"Chat module": "supibot-package-manager",
-			"Command - delete": "supibot-package-manager",
-			"Command - fix": "supibot-package-manager",
-			"Command - new": "supibot-package-manager",
-			"Command - refactor": "supibot-package-manager",
-			"SPM": "supibot-package-manager",
-			"Website": "supinic.com",
-			"Website - API": "supinic.com",
-			"Website - frontend": "supinic.com",
+			Backend: "supibot",
+			SPM: "supibot-package-manager",
+			"Supi-core": "supi-core",
+			Website: "supinic.com"
 		}
 	})),
 	Code: (async function elevate (context, ID) {
@@ -36,7 +28,7 @@ module.exports = {
 				reply: "No suggestion ID provided!"
 			};
 		}
-	
+
 		const suggestionID = Number(ID);
 		if (!sb.Utils.isValidInteger(suggestionID)) {
 			return {
@@ -44,10 +36,10 @@ module.exports = {
 				reply: "Invalid suggestion ID provided!"
 			};
 		}
-	
+
 		const row = await sb.Query.getRow("data", "Suggestion");
 		await row.load(ID, true);
-	
+
 		if (!row.loaded) {
 			return {
 				success: false,
@@ -72,7 +64,7 @@ module.exports = {
 				reply: "You can't elevate suggestions with a status different than \"Approved\"!"
 			};
 		}
-	
+
 		const repo = this.staticData.repositoryMap[row.values.Category];
 		if (!repo) {
 			return {
@@ -80,12 +72,12 @@ module.exports = {
 				reply: `Suggestions with category ${row.values.Category} cannot be elevated!`
 			};
 		}
-	
+
 		const creatorUserData = await sb.User.get(row.values.User_Alias);
 		const authorString = (creatorUserData.Data.github?.login)
 			? `@${creatorUserData.Data.github?.login}`
 			: creatorUserData.Name;
-	
+
 		const issueText = sb.Utils.escapeHTML(row.values.Text);
 		const issueBody = `<a href="//supinic.com/data/suggestion/${ID}">S#${ID}</a> by *${authorString}*\n\n${issueText}`;
 		const { statusCode, body: data } = await sb.Got("GitHub", {
@@ -98,10 +90,10 @@ module.exports = {
 				body: issueBody
 			},
 			headers: {
-				Authorization: "token " + sb.Config.get("SUPIBOT_GITHUB_TOKEN")
+				Authorization: `token ${sb.Config.get("SUPIBOT_GITHUB_TOKEN")}`
 			}
 		});
-	
+
 		if (statusCode !== 201) {
 			console.error("Github issue failed", { statusCode, data });
 			return {
@@ -109,12 +101,12 @@ module.exports = {
 				reply: "Github issue creation failed!"
 			};
 		}
-	
+
 		row.values.Github_Link = `//github.com/Supinic/${repo}/issues/${data.number}`;
 		row.values.Status = "Moved to Github";
 		row.values.Priority = 100;
 		await row.save();
-	
+
 		return {
 			reply: `Success! Suggestion was marked as "Moved to Github" and an issue was created: https:${row.values.Github_Link}`
 		};

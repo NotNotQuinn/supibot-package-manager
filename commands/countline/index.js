@@ -19,7 +19,7 @@ module.exports = {
 		if (user) {
 			user = await sb.User.get(user, true);
 			if (!user) {
-				return { 
+				return {
 					reply: "No such user exists in the database!"
 				};
 			}
@@ -33,8 +33,8 @@ module.exports = {
 				.from("chat_data", "Message_Meta_User_Alias")
 				.where("User_Alias = %n", user.ID)
 				.where("Channel = %n", context.channel.ID)
-			))[0]
-
+			))[0];
+		
 		if (!lines) {
 			return {
 				reply: "That user has sent no chat lines in this channel!"

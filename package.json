@@ -1,10 +1,16 @@
 {
   "scripts": {
-    "test": "mocha tests"
+    "test": "mocha ./tests --recursive --exit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
     "acorn-node": "^2.0.1",
-    "mocha": "latest",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.1.0",
+    "eslint-plugin-unicorn": "^32.0.1",
+    "mocha": "^8.4.0",
     "supi-core": "github:Supinic/supi-core"
-  }
+  },
+  "dependencies": {}
 }

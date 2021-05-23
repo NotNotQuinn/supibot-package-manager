@@ -33,8 +33,8 @@ module.exports = {
 		const [min1, min5] = getLoadAverages();
 		const loadRatio = (min1 / min5);
 		const loadDelta = Math.abs(1 - loadRatio);
-		const loadDirection = (loadRatio > 1) ? "rising" : (loadRatio < 1) ? "falling" : "steady";
-		const loadChange = (loadDelta > 0.10) ? " sharply" : (loadDelta > 0) ? " steadily" : "";
+		const loadDirection = (loadRatio > 1) ? "rising" : ((loadRatio < 1) ? "falling" : "steady");
+		const loadChange = (loadDelta > 0.10) ? " sharply" : ((loadDelta > 0) ? " steadily" : "");
 
 		const uptime = sb.Runtime?.started ?? new sb.Date().addSeconds(-process.uptime());
 		const data = {
@@ -50,8 +50,8 @@ module.exports = {
 
 		if (sb.Cache) {
 			data.Redis = (sb.Cache.active)
-				? String(await sb.Cache.server.dbsize()) + " keys"
-				: "not online"
+				? `${String(await sb.Cache.server.dbsize())} keys`
+				: "not online";
 		}
 
 		if (context.channel) {
@@ -96,16 +96,14 @@ module.exports = {
 		}
 
 		return {
-			reply: pong + " " + Object.entries(data).map(([name, value]) => name + ": " + value).join("; ")
+			reply: `${pong} ${Object.entries(data).map(([name, value]) => `${name}: ${value}`).join("; ")}`
 		};
 	}),
-	Dynamic_Description: (async (prefix) => {
-		return [
-			"Pings the bot, checking if it's alive, and a bunch of other data, like latency and commands used this session",
-			"",
+	Dynamic_Description: (async (prefix) => [
+		"Pings the bot, checking if it's alive, and a bunch of other data, like latency and commands used this session",
+		"",
 	
-			`<code>${prefix}ping</code>`,
-			"Pong! Latency: ..., Commands used: ..."
-		];
-	})
+		`<code>${prefix}ping</code>`,
+		"Pong! Latency: ..., Commands used: ..."
+	])
 };

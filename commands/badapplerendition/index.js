@@ -46,8 +46,8 @@ module.exports = {
 
 				const link = sb.Utils.linkParser.parseLink(input);
 				const existing = await sb.Query.getRecordset(rs => rs
-				    .select("ID", "Device", "Link")
-				    .from("data", "Bad_Apple")
+					.select("ID", "Device", "Link")
+					.from("data", "Bad_Apple")
 					.where(`Link = %s OR JSON_SEARCH(Reuploads, "one", %s) IS NOT NULL`, link, link)
 					.limit(1)
 					.single()
@@ -73,7 +73,7 @@ module.exports = {
 						Status: "Pending approval",
 						Type: null,
 						Published: data.created,
-						Notes: `Added to the list by ${context.user.Name}\n---\n${data.description ?? "No description"}`,
+						Notes: `Added to the list by ${context.user.Name}\n---\n${data.description ?? "No description"}`
 					});
 
 					const { insertId } = await row.save();
@@ -117,7 +117,7 @@ module.exports = {
 			"Aggregate command for all things Bad Apple!! related.",
 			"",
 
-			"<ul>" + subcommands.join("") + "</ul>"
+			`<ul>${subcommands.join("")}</ul>`
 		];
 	})
 };

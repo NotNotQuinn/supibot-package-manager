@@ -22,7 +22,7 @@ module.exports = {
 						endpoints: ["rss"],
 						helpers: ["kalastelija01", "leppunen"]
 					}
-				],
+				]
 			},
 			{
 				code: "vn",
@@ -32,7 +32,7 @@ module.exports = {
 						name: "VietNamNet",
 						url: "https://vietnamnet.vn",
 						path: "rss",
-						endpoints: ["thoi-su.rss", "tuanvietnam.rss" ],
+						endpoints: ["thoi-su.rss", "tuanvietnam.rss"],
 						helpers: ["supinic"]
 					}
 				]
@@ -269,7 +269,7 @@ module.exports = {
 						endpoints: ["rss"],
 						helpers: ["cbdg"]
 					}
-				],
+				]
 			},
 			{
 				code: "hacker",
@@ -316,7 +316,7 @@ module.exports = {
 						helpers: ["kalifail_disbang"]
 					}
 				]
-			},
+			}
 		],
 	
 		extra: {
@@ -338,7 +338,9 @@ module.exports = {
 	
 					const endpoint = sb.Utils.randArray(source.endpoints);
 					const url = [source.url, source.path, endpoint].filter(Boolean).join("/");
-					const feed = await sb.Utils.parseRSS(url);
+
+					const xml = await sb.Got(url).text();
+					const feed = await sb.Utils.parseRSS(xml);
 	
 					articles = feed.items.map(i => ({
 						title: i.title,
@@ -384,7 +386,7 @@ module.exports = {
 				console.warn(e);
 				return {
 					success: false,
-					reply: `Could not fetch any articles due to a source website error!`
+					reply: `Could not fetch any articles due to website error!`
 				};
 			}
 	
@@ -461,7 +463,7 @@ module.exports = {
 				throwHttpErros: false,
 				responseType: "json",
 				retry: 0,
-				timeout: 5000,
+				timeout: 5000
 			});
 		}
 		catch (e) {
@@ -482,7 +484,7 @@ module.exports = {
 				statusCode,
 				reason: data?.message ?? null,
 				apiName: "CurrentsAPI"
-			}); 
+			});
 		}
 	
 		const { news } = data;
@@ -500,7 +502,7 @@ module.exports = {
 		const { description = "", published, title } = sb.Utils.randArray(news);
 		const separator = (title && description) ? " - " : "";
 		const delta = (published)
-			? "(published " + sb.Utils.timeDelta(new sb.Date(published)) + ")"
+			? `(published ${sb.Utils.timeDelta(new sb.Date(published))})`
 			: "";
 	
 		return {
@@ -558,7 +560,7 @@ module.exports = {
 			"",
 	
 			"The following are special codes. Those were often 'helped' by people.",
-			"<table><thead><th>Code</th><th>Language</th><th>Sources</th><th>Helpers</th></thead>" + extraNews + "</table>",
+			`<table><thead><th>Code</th><th>Language</th><th>Sources</th><th>Helpers</th></thead>${extraNews}</table>`,
 			""
 		];
 	})

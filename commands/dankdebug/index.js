@@ -55,15 +55,20 @@ module.exports = {
 			script = string;
 		}
 		else {
-			script = `(() => {\n${string}\n})()`;
+			script = `(async () => {\n${string}\n})()`;
 		}
 		
 		try {
 			const scriptContext = {
+				fixAsync: false,
 				sandbox: {
 					args: scriptArgs ?? null,
+					executor: context.user.Name,
+					channel: context.channel?.Name ?? "(none)",
+					platform: context.platform.Name,
 					console: undefined,
 					utils: {
+						getEmote: (array, fallback) => context.getBestAvailableEmote(array, fallback),
 						Date: sb.Date
 					}
 				}
@@ -73,9 +78,16 @@ module.exports = {
 				scriptContext.sandbox.utils[method] = (...args) => sb.Utils[method](...args);
 			}
 
-			result = sb.Sandbox.run(script, scriptContext);
+			result = await sb.Sandbox.run(script, scriptContext);
 		}
 		catch (e) {
+			if (!(e instanceof Error)) {
+				return {
+					success: false,
+					reply: `Your dank debug threw or rejected with a non-Error value!`
+				};
+			}
+
 			const { name } = e.constructor;
 			if (name === "EvalError") {
 				return {

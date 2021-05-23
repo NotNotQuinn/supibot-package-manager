@@ -8,7 +8,7 @@ module.exports = {
 	Params: null,
 	Whitelist_Response: null,
 	Static_Data: (() => {
-		this.data.cooldowns = {};	
+		this.data.cooldowns = {};
 	
 		return {
 			fetch: (name) => sb.Query.getRecordset(rs => rs
@@ -25,12 +25,12 @@ module.exports = {
 			return { reply: "Playsounds are currently disabled!" };
 		}
 		else if (!playsound || playsound === "list") {
-			return { reply: "Currently available playsounds: https://supinic.com/stream/playsound/list"};
+			return { reply: "Currently available playsounds: https://supinic.com/stream/playsound/list" };
 		}
 		else if (playsound === "random") {
 			playsound = await sb.Query.getRecordset(rs => rs
-			    .select("Name")
-			    .from("data", "Playsound")
+				.select("Name")
+				.from("data", "Playsound")
 				.orderBy("RAND()")
 				.limit(1)
 				.single()
@@ -63,7 +63,7 @@ module.exports = {
 		catch (e) {
 			console.warn(e);
 			await sb.Config.set("PLAYSOUNDS_ENABLED", false);
-			return { reply: "The desktop listener is not currently running, turning off playsounds!" }
+			return { reply: "The desktop listener is not currently running, turning off playsounds!" };
 		}
 	
 		await sb.Query.getRecordUpdater(ru => ru

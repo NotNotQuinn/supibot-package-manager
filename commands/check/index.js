@@ -158,12 +158,12 @@ module.exports = {
 	
 					let string;
 					if (!check) {
-						string = pronoun + " have never eaten a cookie before.";
+						string = `${pronoun} have never eaten a cookie before.`;
 					}
 					else if (check.Cookie_Today) {
 						string = (check.Cookie_Is_Gifted)
-							? pronoun + " have already eaten the daily and gifted cookie today."
-							: pronoun + " have already eaten/gifted the daily cookie today.";
+							? `${pronoun} have already eaten the daily and gifted cookie today.`
+							: `${pronoun} have already eaten/gifted the daily cookie today.`;
 	
 						const date = new sb.Date().addDays(1);
 						date.setUTCHours(0, 0, 0, 0);
@@ -172,8 +172,8 @@ module.exports = {
 					}
 					else {
 						string = (check.Cookie_Is_Gifted)
-							? pronoun + " have a gifted cookie waiting."
-							: pronoun + " have an unused cookie waiting.";
+							? `${pronoun} have a gifted cookie waiting.`
+							: `${pronoun} have an unused cookie waiting.`;
 					}
 	
 					return {
@@ -238,7 +238,7 @@ module.exports = {
 					return {
 						reply: link,
 						replyWithPrivateMessage: true
-					}
+					};
 				}
 			},
 			{
@@ -307,8 +307,8 @@ module.exports = {
 						: await sb.User.get(reminder.User_From, true);
 	
 					const [owner, target] = (context.user.ID === reminder.User_From)
-						? ["Your reminder", "to " + reminderUser.Name]
-						: ["Reminder", "by " + reminderUser.Name + " to you"];
+						? ["Your reminder", `to ${reminderUser.Name}`]
+						: ["Reminder", `by ${reminderUser.Name} to you`];
 	
 					const delta = (reminder.Schedule)
 						? ` (${sb.Utils.timeDelta(reminder.Schedule)})`
@@ -316,7 +316,7 @@ module.exports = {
 	
 					return {
 						reply: `${owner} ID ${ID} ${target}${delta}: ${reminder.Text} ${alreadyFired}`
-					}
+					};
 				}
 			},
 			{
@@ -337,7 +337,7 @@ module.exports = {
 						reply: (last)
 							? `Your last "reset" was ${sb.Utils.timeDelta(last.Timestamp)}.`
 							: `You have never noted down a "reset" before.`
-					}
+					};
 				}
 			},
 			{
@@ -361,7 +361,7 @@ module.exports = {
 					}
 					else {
 						return {
-							reply: "You're currently subscribed to these events: " + types.join(", ")
+							reply: `You're currently subscribed to these events: ${types.join(", ")}`
 						};
 					}
 				}
@@ -498,8 +498,8 @@ module.exports = {
 					}
 
 					const length = await sb.Query.getRecordset(rs => rs
-					    .select("LENGTH(IFNULL(Data, '')) AS Size")
-					    .from("chat_data", "User_Alias")
+						.select("LENGTH(IFNULL(Data, '')) AS Size")
+						.from("chat_data", "User_Alias")
 						.where("ID = %n", userData.ID)
 						.limit(1)
 						.single()
@@ -563,8 +563,7 @@ module.exports = {
 			"",
 	
 			"Supported types:",
-			"<ul>" + list.join("") + "</ul>"
+			`<ul>${list.join("")}</ul>`
 		];
-	
 	})
 };

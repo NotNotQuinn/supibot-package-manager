@@ -7,6 +7,7 @@ module.exports = {
 	Flags: ["non-nullable","pipe","use-params"],
 	Params: [
 		{ name: "debug", type: "string" },
+		{ name: "channel", type: "string" },
 		{ name: "exact", type: "boolean" },
 		{ name: "stop", type: "boolean" },
 		{ name: "words", type: "number" }
@@ -28,19 +29,17 @@ module.exports = {
 					return;
 				}
 
-				if (!module.data.markovs) {
-					module.data.markovs = new Map()
+				const promises = [];
+				for (const [channelID, markov] of module.data.markovs.entries()) {
+					const words = markov.keys.sort();
+					
+					promises.push(sb.Cache.setByPrefix("markov-word-list", words, {
+						keys: { channelID },
+						expiry: 864e5
+					}));
 				}
 
-				const markov = module.data.markovs.get(sb.Channel.get("forsen"));
-				if (!markov) {
-					return;
-				}
-
-				const keys = markov.keys.sort();
-				await sb.Cache.setByPrefix("markov-word-list", keys, {
-					expiry: 864e5
-				});
+				await Promise.all(promises);
 			})
 		});
 		this.data.updateCron.start();
@@ -65,7 +64,15 @@ module.exports = {
 			};
 		}
 
-		const markov = module.data.markovs.get(sb.Channel.get("forsen"));
+		const targetChannel = sb.Channel.get(context.params.channel ?? "forsen");
+		if (!targetChannel) {
+			return {
+				success: false,
+				reply: `No such channel exists!`
+			};
+		}
+		
+		const markov = module.data.markovs.get(targetChannel.ID);
 		if (!markov) {
 			return {
 				success: false,
@@ -83,7 +90,7 @@ module.exports = {
 
 			const { debug } = context.params;
 			const fs = require("fs").promises;
-			const fileName = `markov-dump-${new sb.Date().format("Y-m-d")}.json`
+			const fileName = `markov-dump-${new sb.Date().format("Y-m-d")}-channel-${targetChannel.ID}.json`;
 			if (debug === "save") {
 				await fs.writeFile(`/code/markovs/${fileName}`, JSON.stringify(markov));
 				return {
@@ -174,7 +181,11 @@ module.exports = {
 			if (!markov.has(input)) {
 				return {
 					success: false,
-					reply: `That word is not available as seed for random generation! Check the list here: https://supinic.com/data/other/markov/words`
+					reply: sb.Utils.tag.trim `
+						That word is not available as seed for random generation!
+						Check the list here:
+						https://supinic.com/data/other/markov/${targetChannel.ID}/words
+					`
 				};
 			}
 		}
@@ -186,7 +197,6 @@ module.exports = {
 		return {
 			reply: `🔮 ${string}`
 		};
-
 	}),
 	Dynamic_Description: (async (prefix, values) => {
 		const { threshold, limit } = values.getStaticData();
